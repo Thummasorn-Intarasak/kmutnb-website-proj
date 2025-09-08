@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import {
   FaHome,
   FaGamepad,
@@ -34,7 +35,7 @@ export default function Sidebar({ isOpen = false, onClose }: SidebarProps) {
   }>({});
 
   const topMenuItems = [
-    { icon: FaHome, label: "หน้าหลัก", href: "#" },
+    { icon: FaHome, label: "หน้าหลัก", href: "/" },
     {
       icon: FaGamepad,
       label: "รายการสินค้า",
@@ -71,11 +72,11 @@ export default function Sidebar({ isOpen = false, onClose }: SidebarProps) {
       label: "คำถามทั่วไป",
       href: "#",
     },
-    { icon: FaInfoCircle, label: "เกี่ยวกับเรา", href: "#" },
+    { icon: FaInfoCircle, label: "เกี่ยวกับเรา", href: "/about" },
     {
       icon: FaBalanceScale,
       label: "นโยบายของทางร้าน",
-      href: "#",
+      href: "/privacy",
     },
   ];
 
@@ -142,7 +143,7 @@ export default function Sidebar({ isOpen = false, onClose }: SidebarProps) {
             {topMenuItems.map((item, index) => (
               <li key={index}>
                 <div>
-                  <a
+                  <Link
                     href={item.href}
                     className={`flex items-center text-gray-800 hover:bg-gray-100 rounded-lg transition-colors ${
                       shouldShowExpanded
@@ -180,7 +181,7 @@ export default function Sidebar({ isOpen = false, onClose }: SidebarProps) {
                         )}
                       </button>
                     )}
-                  </a>
+                  </Link>
 
                   {/* Sub Items */}
                   {shouldShowExpanded &&
@@ -189,7 +190,7 @@ export default function Sidebar({ isOpen = false, onClose }: SidebarProps) {
                       <ul className="ml-6  space-y-1">
                         {item.subItems.map((subItem, subIndex) => (
                           <li key={subIndex}>
-                            <a
+                            <Link
                               href={subItem.href}
                               className="flex items-center text-gray-600 hover:bg-gray-100 rounded-lg transition-colors py-2 px-2"
                             >
@@ -197,7 +198,7 @@ export default function Sidebar({ isOpen = false, onClose }: SidebarProps) {
                               <span className="text-sm whitespace-nowrap">
                                 {subItem.label}
                               </span>
-                            </a>
+                            </Link>
                           </li>
                         ))}
                       </ul>
@@ -212,7 +213,7 @@ export default function Sidebar({ isOpen = false, onClose }: SidebarProps) {
           <ul className="space-y-1 mb-4">
             {bottomMenuItems.map((item, index) => (
               <li key={index}>
-                <a
+                <Link
                   href={item.href}
                   className={`flex items-center text-gray-800 hover:bg-gray-100 rounded-lg transition-colors ${
                     shouldShowExpanded
@@ -235,7 +236,7 @@ export default function Sidebar({ isOpen = false, onClose }: SidebarProps) {
                       </span>
                     )}
                   </div>
-                </a>
+                </Link>
               </li>
             ))}
           </ul>
