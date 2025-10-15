@@ -7,43 +7,41 @@ export interface LatestGameCardProps {
   price: string;
 }
 
-// PopularGameCard Props
-export interface PopularGameCardProps {
-  id: number;
-  title: string;
-  image: string;
-  rating: number;
-  price: string;
-}
-
 // BestSellerCard Props
 export interface BestSellerCardProps {
   id: number;
   title: string;
   image: string;
   platform: string;
-  discount: string;
-  originalPrice: string;
+  discount?: string;
+  originalPrice?: string;
   price: string;
 }
 
-// DealCard Props
-export interface DealCardProps {
+// API Item interface (จาก backend)
+export interface ApiItem {
   id: number;
-  title: string;
-  image: string;
-  platform: string;
-  discount: string;
-  originalPrice: string;
-  price: string;
+  game_name: string;
+  description?: string;
+  price: string; // เปลี่ยนจาก number เป็น string เพราะ API ส่งมาเป็น string
+  game_image?: Buffer | string;
 }
 
-// DailyDealCard Props
-export interface DailyDealCardProps {
+// BestSellerCard Props ที่รองรับข้อมูลจาก API
+export interface BestSellerCardFromApiProps {
+  item: ApiItem;
+  platform?: string;
+  discount?: string;
+  originalPrice?: string;
+}
+
+// FeaturedGameCard Props
+export interface FeaturedGameCardProps {
   id: number;
   title: string;
+  description: string;
   image: string;
-  reviews: string;
-  orders: string;
-  price: string;
+  buttonText?: string;
+  buttonColor?: string;
+  imagePosition?: "left" | "right";
 }

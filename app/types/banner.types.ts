@@ -8,13 +8,13 @@ export interface Game {
 export interface Banner {
   id: number;
   title: string;
-  subtitle: string;
-  description: string;
-  image: string;
-  buttonText: string;
-  buttonColor: string;
-  titleColor: string;
-  backgroundColor: string;
+  subtitle?: string;
+  description?: string;
+  image?: string;
+  buttonText?: string;
+  buttonColor?: string;
+  titleColor?: string;
+  backgroundColor?: string;
   games?: Game[];
 }
 

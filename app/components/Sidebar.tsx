@@ -7,8 +7,6 @@ import {
   FaGamepad,
   FaStar,
   FaNewspaper,
-  FaComments,
-  FaQuestionCircle,
   FaInfoCircle,
   FaPlus,
   FaMinus,
@@ -16,9 +14,7 @@ import {
   FaChevronLeft,
   FaChevronRight,
   FaBalanceScale,
-  FaKey,
 } from "react-icons/fa";
-import { BsNintendoSwitch, BsXbox, BsPlaystation } from "react-icons/bs";
 import { RiMoneyDollarCircleLine } from "react-icons/ri";
 import { MdNewReleases } from "react-icons/md";
 
@@ -48,30 +44,10 @@ export default function Sidebar({ isOpen = false, onClose }: SidebarProps) {
         { icon: FaGamepad, label: "เกมทั้งหมด", href: "#" },
       ],
     },
-    {
-      icon: FaGamepad,
-      label: "เกมแพลตฟอร์มอื่นๆ",
-      href: "#",
-      hasExpand: true,
-      subItems: [
-        { icon: FaStar, label: "PC", href: "#" },
-        { icon: BsNintendoSwitch, label: "NINTENDO", href: "#" },
-        { icon: BsXbox, label: "XBOX", href: "#" },
-        { icon: BsPlaystation, label: "PLAYSTATION", href: "#" },
-        { icon: FaKey, label: "Key/Gift Card", href: "#" },
-      ],
-    },
   ];
 
   const bottomMenuItems = [
-    { icon: FaStar, label: "รีวิว", href: "#" },
     { icon: FaNewspaper, label: "อัพเดต", href: "#" },
-    { icon: FaComments, label: "ติดต่อเรา", href: "#" },
-    {
-      icon: FaQuestionCircle,
-      label: "คำถามทั่วไป",
-      href: "#",
-    },
     { icon: FaInfoCircle, label: "เกี่ยวกับเรา", href: "/about" },
     {
       icon: FaBalanceScale,
@@ -145,34 +121,32 @@ export default function Sidebar({ isOpen = false, onClose }: SidebarProps) {
                 <div>
                   <Link
                     href={item.href}
-                    className={`flex items-center text-gray-800 hover:bg-gray-100 rounded-lg transition-colors ${
-                      shouldShowExpanded
-                        ? "justify-between px-2 py-3"
-                        : "justify-center w-8 h-12"
-                    }`}
+                    className="flex items-center text-gray-800 hover:bg-gray-100 rounded-lg transition-all duration-300 px-2 py-3"
                     title={!shouldShowExpanded ? item.label : undefined}
                   >
-                    <div
-                      className={`flex items-center ${
-                        shouldShowExpanded
-                          ? "space-x-3"
-                          : "w-full justify-center"
-                      }`}
-                    >
-                      <item.icon className={`text-gray-600 text-lg`} />
-                      {shouldShowExpanded && (
-                        <span className="text-sm whitespace-nowrap">
-                          {item.label}
-                        </span>
-                      )}
+                    <div className="flex items-center space-x-3 min-w-0">
+                      <item.icon className="text-gray-600 text-lg flex-shrink-0" />
+                      <span
+                        className={`text-sm whitespace-nowrap transition-all duration-300 ${
+                          shouldShowExpanded
+                            ? "opacity-100 max-w-full"
+                            : "opacity-0 max-w-0 overflow-hidden"
+                        }`}
+                      >
+                        {item.label}
+                      </span>
                     </div>
-                    {shouldShowExpanded && item.hasExpand && (
+                    {item.hasExpand && (
                       <button
                         onClick={(e) => {
                           e.preventDefault();
                           toggleExpand(item.label);
                         }}
-                        className="w-6 h-6 bg-gray-200 rounded-full flex items-center justify-center hover:bg-gray-300 transition-colors"
+                        className={`w-6 h-6 bg-gray-200 rounded-full flex items-center justify-center hover:bg-gray-300 transition-all duration-300 ml-3 ${
+                          shouldShowExpanded
+                            ? "opacity-100 scale-100"
+                            : "opacity-0 scale-0"
+                        }`}
                       >
                         {expandedItems[item.label] ? (
                           <FaMinus className="text-gray-600 text-xs" />
@@ -184,25 +158,37 @@ export default function Sidebar({ isOpen = false, onClose }: SidebarProps) {
                   </Link>
 
                   {/* Sub Items */}
-                  {shouldShowExpanded &&
-                    item.subItems &&
-                    expandedItems[item.label] && (
-                      <ul className="ml-6  space-y-1">
+                  {item.subItems && (
+                    <div
+                      className={`overflow-hidden transition-all duration-300 ${
+                        shouldShowExpanded && expandedItems[item.label]
+                          ? "max-h-96 opacity-100"
+                          : "max-h-0 opacity-0"
+                      }`}
+                    >
+                      <ul className="ml-6 space-y-1">
                         {item.subItems.map((subItem, subIndex) => (
                           <li key={subIndex}>
                             <Link
                               href={subItem.href}
-                              className="flex items-center text-gray-600 hover:bg-gray-100 rounded-lg transition-colors py-2 px-2"
+                              className="flex items-center text-gray-600 hover:bg-gray-100 rounded-lg transition-all duration-300 py-2 px-2"
                             >
-                              <subItem.icon className="text-gray-600 text-sm mr-3" />
-                              <span className="text-sm whitespace-nowrap">
+                              <subItem.icon className="text-gray-600 text-sm mr-3 flex-shrink-0" />
+                              <span
+                                className={`text-sm whitespace-nowrap transition-all duration-300 ${
+                                  shouldShowExpanded
+                                    ? "opacity-100 max-w-full"
+                                    : "opacity-0 max-w-0 overflow-hidden"
+                                }`}
+                              >
                                 {subItem.label}
                               </span>
                             </Link>
                           </li>
                         ))}
                       </ul>
-                    )}
+                    </div>
+                  )}
                 </div>
               </li>
             ))}
@@ -215,26 +201,20 @@ export default function Sidebar({ isOpen = false, onClose }: SidebarProps) {
               <li key={index}>
                 <Link
                   href={item.href}
-                  className={`flex items-center text-gray-800 hover:bg-gray-100 rounded-lg transition-colors ${
-                    shouldShowExpanded
-                      ? "justify-between px-1.75 py-3.5" // เพิ่ม justify-between ตรงนี้
-                      : "justify-center w-8 h-12"
-                  }`}
+                  className="flex items-center text-gray-800 hover:bg-gray-100 rounded-lg transition-all duration-300 px-2 py-3"
                   title={!shouldShowExpanded ? item.label : undefined}
                 >
-                  <div
-                    className={`flex items-center ${
-                      shouldShowExpanded ? "space-x-3" : "w-full justify-center"
-                    }`}
-                  >
-                    <item.icon
-                      className={`text-gray-600 text-lg`} // แก้เป็น text-lg
-                    />
-                    {shouldShowExpanded && (
-                      <span className="text-sm whitespace-nowrap">
-                        {item.label}
-                      </span>
-                    )}
+                  <div className="flex items-center space-x-3 min-w-0">
+                    <item.icon className="text-gray-600 text-lg flex-shrink-0" />
+                    <span
+                      className={`text-sm whitespace-nowrap transition-all duration-300 ${
+                        shouldShowExpanded
+                          ? "opacity-100 max-w-full"
+                          : "opacity-0 max-w-0 overflow-hidden"
+                      }`}
+                    >
+                      {item.label}
+                    </span>
                   </div>
                 </Link>
               </li>

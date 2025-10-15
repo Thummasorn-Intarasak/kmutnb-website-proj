@@ -19,15 +19,40 @@ import {
   FaCog,
 } from "react-icons/fa";
 import { useAuth } from "../contexts/AuthContext";
+import { useAppDispatch, useAppSelector } from "../hooks";
+import { openCart } from "../store/slices/cartSlice";
+import Cart from "./Cart";
+import { itemApi } from "../../lib/api-client";
+import { useRouter } from "next/navigation";
 
 interface NavbarProps {
   onToggleSidebar?: () => void;
 }
 
+interface SearchResult {
+  id: number;
+  game_name: string;
+  price: string;
+  game_image?: string | Buffer;
+}
+
 export default function Navbar({ onToggleSidebar }: NavbarProps) {
   const { user, logout } = useAuth();
+  const dispatch = useAppDispatch();
+  const router = useRouter();
+  const { totalItems } = useAppSelector((state) => state.cart) as {
+    totalItems: number;
+  };
+  const wishlistItems = useAppSelector((state) => state.wishlist.items);
+  const wishlistCount = wishlistItems.length;
   const [isUserDropdownOpen, setIsUserDropdownOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [searchResults, setSearchResults] = useState<SearchResult[]>([]);
+  const [isSearching, setIsSearching] = useState(false);
+  const [showSearchResults, setShowSearchResults] = useState(false);
   const userDropdownRef = useRef<HTMLDivElement>(null);
+  const searchDropdownDesktopRef = useRef<HTMLDivElement>(null);
+  const searchDropdownMobileRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
@@ -37,6 +62,14 @@ export default function Navbar({ onToggleSidebar }: NavbarProps) {
       ) {
         setIsUserDropdownOpen(false);
       }
+      if (
+        searchDropdownDesktopRef.current &&
+        !searchDropdownDesktopRef.current.contains(event.target as Node) &&
+        searchDropdownMobileRef.current &&
+        !searchDropdownMobileRef.current.contains(event.target as Node)
+      ) {
+        setShowSearchResults(false);
+      }
     }
 
     document.addEventListener("mousedown", handleClickOutside);
@@ -44,6 +77,45 @@ export default function Navbar({ onToggleSidebar }: NavbarProps) {
       document.removeEventListener("mousedown", handleClickOutside);
     };
   }, []);
+
+  // ค้นหาเกมเมื่อพิมพ์
+  useEffect(() => {
+    const searchGames = async () => {
+      if (searchQuery.trim().length < 2) {
+        setSearchResults([]);
+        setShowSearchResults(false);
+        return;
+      }
+
+      setIsSearching(true);
+      try {
+        const results = await itemApi.searchItems(searchQuery);
+        setSearchResults(results.slice(0, 5)); // แสดงแค่ 5 รายการ
+        setShowSearchResults(true);
+      } catch (error) {
+        console.error("Search error:", error);
+        setSearchResults([]);
+      } finally {
+        setIsSearching(false);
+      }
+    };
+
+    const debounceTimer = setTimeout(searchGames, 300); // debounce 300ms
+    return () => clearTimeout(debounceTimer);
+  }, [searchQuery]);
+
+  const handleSearchItemClick = (id: number) => {
+    router.push(`/game/${id}`);
+    setSearchQuery("");
+    setShowSearchResults(false);
+  };
+
+  const getImageUrl = (image: string | Buffer | undefined): string => {
+    if (!image) return "/placeholder-game.jpg";
+    if (typeof image === "string") return image;
+    // ถ้าเป็น Buffer ใช้ placeholder
+    return "/placeholder-game.jpg";
+  };
 
   return (
     <header className="bg-white shadow-sm border-b border-gray-200 sticky top-0 z-50">
@@ -66,7 +138,10 @@ export default function Navbar({ onToggleSidebar }: NavbarProps) {
           </div>
 
           {/* ช่องค้นหาเกม (แสดงเฉพาะในหน้าจอขนาดกลางขึ้นไป) */}
-          <div className="flex-1 max-w-lg mx-8 hidden md:block">
+          <div
+            className="flex-1 max-w-lg mx-8 hidden md:block"
+            ref={searchDropdownDesktopRef}
+          >
             <div className="relative">
               <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                 <FaSearch className="text-gray-400" />
@@ -74,17 +149,69 @@ export default function Navbar({ onToggleSidebar }: NavbarProps) {
               <input
                 type="text"
                 placeholder="Search Games"
-                className="block w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-500 focus:border-transparent"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                onFocus={() =>
+                  searchQuery.length >= 2 && setShowSearchResults(true)
+                }
+                className="block w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-500 focus:border-transparent text-gray-900"
               />
+
+              {/* Search Results Dropdown */}
+              {showSearchResults && (
+                <div className="absolute top-full left-0 right-0 mt-2 bg-white rounded-lg shadow-lg border border-gray-200 max-h-96 overflow-y-auto z-50">
+                  {isSearching ? (
+                    <div className="p-4 text-center text-gray-500">
+                      <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-gray-500 mx-auto mb-2"></div>
+                      กำลังค้นหา...
+                    </div>
+                  ) : searchResults.length > 0 ? (
+                    <div className="py-2">
+                      {searchResults.map((result) => (
+                        <button
+                          key={result.id}
+                          onClick={() => handleSearchItemClick(result.id)}
+                          className="w-full px-4 py-3 hover:bg-gray-50 flex items-center space-x-3 transition-colors"
+                        >
+                          <img
+                            src={getImageUrl(result.game_image)}
+                            alt={result.game_name}
+                            className="w-12 h-12 object-cover rounded"
+                          />
+                          <div className="flex-1 text-left">
+                            <p className="text-sm font-medium text-gray-900">
+                              {result.game_name}
+                            </p>
+                            <p className="text-sm text-gray-600">
+                              ฿{parseFloat(result.price).toFixed(2)}
+                            </p>
+                          </div>
+                        </button>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="p-4 text-center text-gray-500">
+                      ไม่พบเกมที่ค้นหา
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
           </div>
 
           {/* ส่วนปุ่มต่างๆ และโปรไฟล์ผู้ใช้ */}
           <div className="flex items-center space-x-4">
-            {/* ปุ่มหัวใจ */}
-            <button className="p-2 text-gray-600 hover:text-gray-800">
-              <FaHeart className="text-lg" />
-            </button>
+            {/* ปุ่มรายการโปรด */}
+            <Link href="/wishlist">
+              <button className="p-2 text-gray-600 hover:text-gray-800 relative">
+                <FaHeart className="text-lg" />
+                {wishlistCount > 0 && (
+                  <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
+                    {wishlistCount}
+                  </span>
+                )}
+              </button>
+            </Link>
 
             {/* ปุ่มแจ้งเตือน */}
             <button className="p-2 text-gray-600 hover:text-gray-800">
@@ -92,8 +219,16 @@ export default function Navbar({ onToggleSidebar }: NavbarProps) {
             </button>
 
             {/* ปุ่มตะกร้าสินค้า */}
-            <button className="p-2 text-gray-600 hover:text-gray-800 relative">
+            <button
+              onClick={() => dispatch(openCart())}
+              className="p-2 text-gray-600 hover:text-gray-800 relative"
+            >
               <FaShoppingCart className="text-lg" />
+              {totalItems > 0 && (
+                <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
+                  {totalItems}
+                </span>
+              )}
             </button>
 
             {/* ส่วนผู้ใช้หรือปุ่มเข้าสู่ระบบ */}
@@ -116,7 +251,9 @@ export default function Navbar({ onToggleSidebar }: NavbarProps) {
                     <div className="w-8 h-8 bg-gray-300 rounded-full flex items-center justify-center">
                       <FaUser className="text-gray-600 text-sm" />
                     </div>
-                    <span className="hidden sm:block">สวัสดี, {user.name}</span>
+                    <span className="hidden sm:block">
+                      สวัสดี, {user.username}
+                    </span>
                     <FaChevronDown className="text-xs text-gray-500" />
                   </button>
 
@@ -132,7 +269,7 @@ export default function Navbar({ onToggleSidebar }: NavbarProps) {
                             </div>
                             <div>
                               <p className="text-sm font-medium text-gray-900">
-                                {user.name}
+                                {user.username}
                               </p>
                               <p className="text-xs text-gray-500">
                                 {user.email}
@@ -202,17 +339,65 @@ export default function Navbar({ onToggleSidebar }: NavbarProps) {
 
       {/* ช่องค้นหาเกมสำหรับมือถือ (แสดงเฉพาะในหน้าจอขนาดเล็ก) */}
       <div className="md:hidden px-4 py-2 border-t border-gray-200">
-        <div className="relative">
+        <div className="relative" ref={searchDropdownMobileRef}>
           <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
             <FaSearch className="text-gray-400" />
           </div>
           <input
             type="text"
             placeholder="Search Games"
-            className="block w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-500 focus:border-transparent"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            onFocus={() =>
+              searchQuery.length >= 2 && setShowSearchResults(true)
+            }
+            className="block w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-500 focus:border-transparent text-gray-900"
           />
+
+          {/* Search Results Dropdown for Mobile */}
+          {showSearchResults && (
+            <div className="absolute top-full left-0 right-0 mt-2 bg-white rounded-lg shadow-lg border border-gray-200 max-h-96 overflow-y-auto z-50">
+              {isSearching ? (
+                <div className="p-4 text-center text-gray-500">
+                  <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-gray-500 mx-auto mb-2"></div>
+                  กำลังค้นหา...
+                </div>
+              ) : searchResults.length > 0 ? (
+                <div className="py-2">
+                  {searchResults.map((result) => (
+                    <button
+                      key={result.id}
+                      onClick={() => handleSearchItemClick(result.id)}
+                      className="w-full px-4 py-3 hover:bg-gray-50 flex items-center space-x-3 transition-colors"
+                    >
+                      <img
+                        src={getImageUrl(result.game_image)}
+                        alt={result.game_name}
+                        className="w-12 h-12 object-cover rounded"
+                      />
+                      <div className="flex-1 text-left">
+                        <p className="text-sm font-medium text-gray-900">
+                          {result.game_name}
+                        </p>
+                        <p className="text-sm text-gray-600">
+                          ฿{parseFloat(result.price).toFixed(2)}
+                        </p>
+                      </div>
+                    </button>
+                  ))}
+                </div>
+              ) : (
+                <div className="p-4 text-center text-gray-500">
+                  ไม่พบเกมที่ค้นหา
+                </div>
+              )}
+            </div>
+          )}
         </div>
       </div>
+
+      {/* Cart Component */}
+      <Cart />
     </header>
   );
 }

@@ -7,10 +7,11 @@ import {
   useEffect,
   ReactNode,
 } from "react";
+import { userApi } from "../../lib/api-client";
 
 interface User {
-  id: string;
-  name: string;
+  id: number;
+  username: string;
   email: string;
   balance: number;
 }
@@ -21,6 +22,7 @@ interface AuthContextType {
   register: (name: string, email: string, password: string) => Promise<boolean>;
   logout: () => void;
   loading: boolean;
+  refreshBalance: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -47,19 +49,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     password: string
   ): Promise<boolean> => {
     try {
-      // Simulate API call - replace with actual authentication logic
-      await new Promise((resolve) => setTimeout(resolve, 1000));
+      // เรียก API เพื่อ login
+      const response = await userApi.login({
+        username: emailOrUsername,
+        password: password,
+      });
 
-      // For demo purposes, accept any email/username and password combination
-      if (emailOrUsername && password) {
-        // Check if input is email format
-        const isEmail = emailOrUsername.includes("@");
-
+      if (response && response.user) {
         const userData: User = {
-          id: "1",
-          name: isEmail ? emailOrUsername.split("@")[0] : emailOrUsername, // Use email prefix or username as name
-          email: isEmail ? emailOrUsername : `${emailOrUsername}@example.com`, // If username, create a demo email
-          balance: 1000, // Default balance for demo
+          id: response.user.id,
+          username: response.user.username,
+          email: response.user.email,
+          balance: parseFloat(response.user.balance) || 0,
         };
 
         setUser(userData);
@@ -74,21 +75,24 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   const register = async (
-    name: string,
+    username: string,
     email: string,
     password: string
   ): Promise<boolean> => {
     try {
-      // Simulate API call - replace with actual registration logic
-      await new Promise((resolve) => setTimeout(resolve, 1000));
+      // เรียก API เพื่อสมัครสมาชิก
+      const response = await userApi.register({
+        username: username,
+        email: email,
+        password: password,
+      });
 
-      // For demo purposes, accept any valid registration
-      if (name && email && password) {
+      if (response && response.user) {
         const userData: User = {
-          id: "1",
-          name: name,
-          email: email,
-          balance: 1000, // Default balance for demo
+          id: response.user.id,
+          username: response.user.username,
+          email: response.user.email,
+          balance: parseFloat(response.user.balance) || 0,
         };
 
         setUser(userData);
@@ -107,12 +111,31 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     localStorage.removeItem("user");
   };
 
+  const refreshBalance = async () => {
+    if (!user) return;
+
+    try {
+      const response = await userApi.getUserById(user.id);
+      if (response) {
+        const updatedUser = {
+          ...user,
+          balance: parseFloat(response.balance) || user.balance,
+        };
+        setUser(updatedUser);
+        localStorage.setItem("user", JSON.stringify(updatedUser));
+      }
+    } catch (error) {
+      console.error("Error refreshing balance:", error);
+    }
+  };
+
   const value = {
     user,
     login,
     register,
     logout,
     loading,
+    refreshBalance,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

@@ -5,6 +5,7 @@ import Link from "next/link";
 import { FaHome, FaPhone, FaEnvelope, FaMapMarkerAlt } from "react-icons/fa";
 import Navbar from "../components/Navbar";
 import Sidebar from "../components/Sidebar";
+import ContactButton from "../components/ContactButton";
 
 export default function AboutPage() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
@@ -44,7 +45,7 @@ export default function AboutPage() {
             <div className="mb-8">
               <h1 className="text-3xl font-bold text-gray-900 flex items-center">
                 <span className="w-2 h-2 bg-blue-600 rounded-full mr-3"></span>
-                499K NETWORK
+                FPB Game Store
               </h1>
             </div>
 
@@ -60,7 +61,7 @@ export default function AboutPage() {
                 </h2>
                 <div className="text-gray-700 leading-relaxed">
                   <p>
-                    499K NETWORK
+                    FPB Game Store
                     เป็นเว็บไซต์ที่นำเสนอการบริการเกี่ยวกับการเพิ่มเวลา Steam
                     และการจัดการสินค้าดิจิทัลอื่นๆ ที่เกี่ยวข้องกับเกมออนไลน์
                     ทีมงานของเรามุ่งมั่นที่จะให้บริการที่รวดเร็วและมีคุณภาพให้แก่ผู้ใช้งาน
@@ -88,7 +89,7 @@ export default function AboutPage() {
                 </h2>
                 <div className="text-gray-700 leading-relaxed">
                   <p>
-                    ทีมงาน 499K NETWORK
+                    ทีมงาน FPB Game Store
                     ประกอบไปด้วยผู้เชี่ยวชาญด้านเทคโนโลยีและเกมออนไลน์ที่มีประสบการณ์
                     เราให้ความสำคัญกับการให้บริการลูกค้าและการพัฒนาอย่างต่อเนื่อง
                   </p>
@@ -105,7 +106,7 @@ export default function AboutPage() {
                     หากคุณต้องการติดต่อเราสำหรับข้อมูลเพิ่มเติมหรือข้อเสนอแนะ
                     กรุณาส่งอีเมลมาที่{" "}
                     <span className="text-orange-500 font-medium">
-                      contact@499k-network.com
+                      s6504022630129@email.kmutnb.ac.th
                     </span>
                   </p>
                 </div>
@@ -114,6 +115,9 @@ export default function AboutPage() {
           </div>
         </div>
       </div>
+
+      {/* Contact Button */}
+      <ContactButton />
     </div>
   );
 }

@@ -4,7 +4,7 @@ import { useState } from "react";
 import Navbar from "./components/Navbar";
 import Sidebar from "./components/Sidebar";
 import MainContent from "./components/MainContent";
-import RightSidebar from "./components/RightSidebar";
+import ContactButton from "./components/ContactButton";
 
 export default function Home() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
@@ -26,8 +26,10 @@ export default function Home() {
           <MainContent />
           <div className="p-6"></div>
         </div>
-        <RightSidebar />
       </div>
+
+      {/* Contact Button - Fixed at bottom right */}
+      <ContactButton />
     </div>
   );
 }
