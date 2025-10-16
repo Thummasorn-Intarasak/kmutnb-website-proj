@@ -8,7 +8,7 @@ import { BannerCarouselProps } from "../types";
 export default function BannerCarousel({
   banners,
   autoPlay = true,
-  autoPlayInterval = 5000,
+  autoPlayInterval = 20000,
 }: BannerCarouselProps) {
   const [currentIndex, setCurrentIndex] = useState(0);
   const router = useRouter();
@@ -51,20 +51,20 @@ export default function BannerCarousel({
   };
 
   return (
-    <div className="relative w-full h-96 mb-8 overflow-hidden">
+    <div className="relative w-full h-48 sm:h-64 md:h-80 lg:h-96 mb-4 sm:mb-6 md:mb-8 overflow-hidden">
       {/* Banner Container with Peek View */}
-      <div className="relative w-full h-full flex items-center justify-center px-4">
-        {/* Previous Banner (Left Peek) */}
+      <div className="relative w-full h-full flex items-center justify-center px-2 sm:px-4">
+        {/* Previous Banner (Left Peek) - Hidden on mobile */}
         {banners.length > 1 && (
           <div
-            className="absolute left-0 w-1/4 h-full z-0 cursor-pointer transition-all duration-500 hover:opacity-70"
+            className="hidden md:block absolute left-0 w-1/4 h-full z-0 cursor-pointer transition-all duration-500 hover:opacity-70"
             style={{
               transform: "translateX(10%) scale(0.9)",
               opacity: 0.4,
             }}
             onClick={() => goToPrevious()}
           >
-            <div className="w-full h-full rounded-xl overflow-hidden">
+            <div className="w-full h-full rounded-lg lg:rounded-xl overflow-hidden">
               {banners[getPrevIndex()].banner_image && (
                 <img
                   src={banners[getPrevIndex()].banner_image}
@@ -78,10 +78,10 @@ export default function BannerCarousel({
 
         {/* Current Banner (Center) */}
         <div
-          className="relative w-full max-w-4xl h-full z-10 cursor-pointer transition-all duration-500"
+          className="relative w-full md:max-w-2xl lg:max-w-4xl h-full z-10 cursor-pointer transition-all duration-500"
           onClick={() => handleBannerClick(currentIndex)}
         >
-          <div className="w-full h-full rounded-xl overflow-hidden shadow-2xl">
+          <div className="w-full h-full rounded-lg lg:rounded-xl overflow-hidden shadow-xl lg:shadow-2xl">
             {banners[currentIndex].banner_image && (
               <img
                 src={banners[currentIndex].banner_image}
@@ -92,17 +92,17 @@ export default function BannerCarousel({
           </div>
         </div>
 
-        {/* Next Banner (Right Peek) */}
+        {/* Next Banner (Right Peek) - Hidden on mobile */}
         {banners.length > 1 && (
           <div
-            className="absolute right-0 w-1/4 h-full z-0 cursor-pointer transition-all duration-500 hover:opacity-70"
+            className="hidden md:block absolute right-0 w-1/4 h-full z-0 cursor-pointer transition-all duration-500 hover:opacity-70"
             style={{
               transform: "translateX(-10%) scale(0.9)",
               opacity: 0.4,
             }}
             onClick={() => goToNext()}
           >
-            <div className="w-full h-full rounded-xl overflow-hidden">
+            <div className="w-full h-full rounded-lg lg:rounded-xl overflow-hidden">
               {banners[getNextIndex()].banner_image && (
                 <img
                   src={banners[getNextIndex()].banner_image}
@@ -123,25 +123,25 @@ export default function BannerCarousel({
               e.stopPropagation();
               goToPrevious();
             }}
-            className="absolute left-0 top-0 h-full w-20 z-30 flex items-center justify-center bg-gradient-to-r from-black/30 to-transparent hover:from-black/50 text-white transition-all group"
+            className="absolute left-0 top-0 h-full w-12 sm:w-16 lg:w-20 z-30 flex items-center justify-center bg-gradient-to-r from-black/30 to-transparent hover:from-black/50 text-white transition-all group"
           >
-            <FaChevronLeft className="w-8 h-8 group-hover:scale-125 transition-transform" />
+            <FaChevronLeft className="w-5 h-5 sm:w-6 sm:h-6 lg:w-8 lg:h-8 group-hover:scale-125 transition-transform" />
           </button>
           <button
             onClick={(e) => {
               e.stopPropagation();
               goToNext();
             }}
-            className="absolute right-0 top-0 h-full w-20 z-30 flex items-center justify-center bg-gradient-to-l from-black/30 to-transparent hover:from-black/50 text-white transition-all group"
+            className="absolute right-0 top-0 h-full w-12 sm:w-16 lg:w-20 z-30 flex items-center justify-center bg-gradient-to-l from-black/30 to-transparent hover:from-black/50 text-white transition-all group"
           >
-            <FaChevronRight className="w-8 h-8 group-hover:scale-125 transition-transform" />
+            <FaChevronRight className="w-5 h-5 sm:w-6 sm:h-6 lg:w-8 lg:h-8 group-hover:scale-125 transition-transform" />
           </button>
         </>
       )}
 
       {/* Dots Indicator */}
       {banners.length > 1 && (
-        <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 flex space-x-2 z-20">
+        <div className="absolute bottom-2 sm:bottom-3 md:bottom-4 left-1/2 transform -translate-x-1/2 flex space-x-1.5 sm:space-x-2 z-20">
           {banners.map((_, index) => (
             <button
               key={index}
@@ -149,7 +149,7 @@ export default function BannerCarousel({
                 e.stopPropagation();
                 goToSlide(index);
               }}
-              className={`w-3 h-3 rounded-full transition-all ${
+              className={`w-2 h-2 sm:w-2.5 sm:h-2.5 md:w-3 md:h-3 rounded-full transition-all ${
                 index === currentIndex
                   ? "bg-white"
                   : "bg-white bg-opacity-50 hover:bg-opacity-75"
