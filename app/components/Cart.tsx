@@ -7,9 +7,13 @@ import {
   closeCart,
 } from "../store/slices/cartSlice";
 import { FaTimes, FaPlus, FaMinus, FaShoppingCart } from "react-icons/fa";
+import { useAuth } from "../contexts/AuthContext";
+import { useRouter } from "next/navigation";
 
 export default function Cart() {
   const dispatch = useAppDispatch();
+  const router = useRouter();
+  const { user } = useAuth();
   const { items, totalItems, totalPrice, isOpen } = useAppSelector(
     (state) => state.cart
   );
@@ -28,6 +32,18 @@ export default function Cart() {
 
   const handleCloseCart = () => {
     dispatch(closeCart());
+  };
+
+  const handleCheckout = () => {
+    // เช็คว่า login แล้วหรือยัง
+    if (!user) {
+      dispatch(closeCart());
+      router.push("/login");
+      return;
+    }
+
+    // TODO: ไปหน้า checkout
+    alert("ฟังก์ชันชำระเงินยังไม่เสร็จสมบูรณ์");
   };
 
   if (!isOpen) return null;
@@ -136,7 +152,10 @@ export default function Cart() {
                 </button>
               </div>
               <div className="space-y-2">
-                <button className="w-full bg-gray-900 text-white py-3 px-4 rounded-lg hover:bg-gray-800 transition-colors font-medium">
+                <button
+                  onClick={handleCheckout}
+                  className="w-full bg-gray-900 text-white py-3 px-4 rounded-lg hover:bg-gray-800 transition-colors font-medium"
+                >
                   Proceed to Checkout
                 </button>
                 <button

@@ -1,21 +1,19 @@
-// Game interface for banner
+// Game interface (ข้อมูลเกมที่เชื่อมกับ banner)
 export interface Game {
-  title: string;
-  image: string;
+  game_id: number;
+  game_name: string;
+  game_description?: string;
+  game_price: number;
+  game_image?: string;
 }
 
 // Banner interface
 export interface Banner {
-  id: number;
-  title: string;
-  subtitle?: string;
-  description?: string;
-  image?: string;
-  buttonText?: string;
-  buttonColor?: string;
-  titleColor?: string;
-  backgroundColor?: string;
-  games?: Game[];
+  banner_id: number;
+  banner_name: string;
+  banner_image?: string;
+  game_id: number;
+  game?: Game; // ข้อมูลเกมที่เชื่อมกับ banner (จาก relation)
 }
 
 // BannerCarousel Props

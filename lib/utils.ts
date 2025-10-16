@@ -36,17 +36,44 @@ export function formatOriginalPrice(
  * แปลงข้อมูลเกมจาก API ให้เข้ากับ interface ของ frontend
  */
 export function transformGameData(apiGame: any) {
+  // จัดการ game_image ที่อาจเป็น JSON array
+  let imageUrl = "/placeholder-game.jpg";
+
+  if (apiGame.game_image) {
+    try {
+      // ลอง parse เป็น JSON array (กรณีหลายรูป)
+      const parsed = JSON.parse(apiGame.game_image);
+      if (Array.isArray(parsed) && parsed.length > 0) {
+        // เอารูปแรกมา (path จะเป็น uploads/games/{game-slug}/filename.jpg)
+        const firstImage = parsed[0];
+        imageUrl = firstImage.startsWith("uploads/")
+          ? `http://localhost:3002/${firstImage}`
+          : firstImage;
+      }
+    } catch (error) {
+      // parse ไม่ได้ แสดงว่าเป็น string เดียว (รูปเดียว)
+      if (typeof apiGame.game_image === "string") {
+        // path จะเป็น uploads/games/{game-slug}/filename.jpg
+        imageUrl = apiGame.game_image.startsWith("uploads/")
+          ? `http://localhost:3002/${apiGame.game_image}`
+          : apiGame.game_image;
+      }
+    }
+  } else if (apiGame.image) {
+    imageUrl = apiGame.image;
+  }
+
   return {
-    id: apiGame.id,
+    id: apiGame.game_id || apiGame.id,
     title: apiGame.game_name || apiGame.title || "Unknown Game",
-    image: apiGame.game_image || apiGame.image || "/placeholder-game.jpg",
+    image: imageUrl,
     platform: apiGame.platform || "steam",
-    price: safeNumber(apiGame.price),
+    price: safeNumber(apiGame.game_price || apiGame.price),
     originalPrice: apiGame.originalPrice
       ? safeNumber(apiGame.originalPrice)
       : undefined,
     discount: apiGame.discount || undefined,
-    description: apiGame.description || undefined,
+    description: apiGame.game_description || apiGame.description || undefined,
     category: apiGame.category || undefined,
     isNew: apiGame.isNew || false,
     isBestSeller: apiGame.isBestSeller || false,
@@ -57,18 +84,47 @@ export function transformGameData(apiGame: any) {
  * แปลงข้อมูล banner จาก API ให้เข้ากับ interface ของ frontend
  */
 export function transformBannerData(apiBanner: any) {
+  // จัดการ banner_image URL (path จะเป็น uploads/banners/filename.jpg)
+  let imageUrl = "/placeholder-banner.jpg";
+  if (apiBanner.banner_image) {
+    imageUrl = apiBanner.banner_image.startsWith("uploads/")
+      ? `http://localhost:3002/${apiBanner.banner_image}`
+      : apiBanner.banner_image;
+  }
+
+  // จัดการ game.game_image ถ้ามี (path จะเป็น uploads/games/{game-slug}/filename.jpg)
+  let gameImageUrl = "/placeholder-game.jpg";
+  if (apiBanner.game?.game_image) {
+    try {
+      const parsed = JSON.parse(apiBanner.game.game_image);
+      if (Array.isArray(parsed) && parsed.length > 0) {
+        const firstImage = parsed[0];
+        gameImageUrl = firstImage.startsWith("uploads/")
+          ? `http://localhost:3002/${firstImage}`
+          : firstImage;
+      }
+    } catch {
+      if (typeof apiBanner.game.game_image === "string") {
+        gameImageUrl = apiBanner.game.game_image.startsWith("uploads/")
+          ? `http://localhost:3002/${apiBanner.game.game_image}`
+          : apiBanner.game.game_image;
+      }
+    }
+  }
+
   return {
-    id: apiBanner.id,
-    title: apiBanner.title || "Untitled Banner",
-    subtitle: apiBanner.subtitle || undefined,
-    description: apiBanner.description || undefined,
-    image: apiBanner.image || "/placeholder-banner.jpg",
-    buttonText: apiBanner.buttonText || "Learn More",
-    buttonColor: apiBanner.buttonColor || "#3b82f6",
-    titleColor: apiBanner.titleColor || "#ffffff",
-    backgroundColor:
-      apiBanner.backgroundColor || "linear-gradient(135deg, #3b82f6, #1e40af)",
-    isActive: apiBanner.isActive !== false,
-    sortOrder: safeNumber(apiBanner.sortOrder),
+    banner_id: apiBanner.banner_id,
+    banner_name: apiBanner.banner_name,
+    banner_image: imageUrl,
+    game_id: apiBanner.game_id,
+    game: apiBanner.game
+      ? {
+          game_id: apiBanner.game.game_id,
+          game_name: apiBanner.game.game_name,
+          game_description: apiBanner.game.game_description,
+          game_price: safeNumber(apiBanner.game.game_price),
+          game_image: gameImageUrl,
+        }
+      : undefined,
   };
 }

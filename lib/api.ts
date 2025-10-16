@@ -125,8 +125,8 @@ export const itemApi = {
   // สร้างเกมใหม่
   createItem: async (itemData: {
     game_name: string;
-    description?: string;
-    price: number;
+    game_description?: string;
+    game_price: number;
     game_image?: Buffer;
   }) => {
     const response = await api.post("/items", itemData);
@@ -138,8 +138,8 @@ export const itemApi = {
     id: number,
     itemData: {
       game_name?: string;
-      description?: string;
-      price?: number;
+      game_description?: string;
+      game_price?: number;
       game_image?: Buffer;
     }
   ) => {
@@ -170,16 +170,9 @@ export const bannerApi = {
 
   // สร้าง banner ใหม่
   createBanner: async (bannerData: {
-    title: string;
-    subtitle?: string;
-    description?: string;
-    image?: string;
-    buttonText?: string;
-    buttonColor?: string;
-    titleColor?: string;
-    backgroundColor?: string;
-    isActive?: boolean;
-    sortOrder?: number;
+    banner_name: string;
+    banner_image?: string;
+    game_id: number;
   }) => {
     const response = await api.post("/banners", bannerData);
     return response.data;
@@ -189,31 +182,30 @@ export const bannerApi = {
   updateBanner: async (
     id: number,
     bannerData: {
-      title?: string;
-      subtitle?: string;
-      description?: string;
-      image?: string;
-      buttonText?: string;
-      buttonColor?: string;
-      titleColor?: string;
-      backgroundColor?: string;
-      isActive?: boolean;
-      sortOrder?: number;
+      banner_name?: string;
+      banner_image?: string;
+      game_id?: number;
     }
   ) => {
     const response = await api.put(`/banners/${id}`, bannerData);
     return response.data;
   },
 
-  // เปลี่ยนสถานะ banner
-  toggleBannerStatus: async (id: number) => {
-    const response = await api.put(`/banners/${id}/toggle`);
-    return response.data;
-  },
-
   // ลบ banner
   deleteBanner: async (id: number) => {
     const response = await api.delete(`/banners/${id}`);
+    return response.data;
+  },
+
+  // อัปโหลดรูปภาพ banner
+  uploadBannerImage: async (id: number, file: File) => {
+    const formData = new FormData();
+    formData.append("banner_image", file);
+    const response = await api.patch(`/banners/${id}/upload-image`, formData, {
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+    });
     return response.data;
   },
 };

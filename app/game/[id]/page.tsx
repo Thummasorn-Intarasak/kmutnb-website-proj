@@ -1,8 +1,12 @@
 "use client";
 import { useState, useEffect } from "react";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { useAppDispatch, useItemById } from "../../hooks";
 import { addToCart } from "../../store/slices/cartSlice";
+import {
+  addToWishlist,
+  removeFromWishlist,
+} from "../../store/slices/wishlistSlice";
 import {
   FaHeart,
   FaShoppingCart,
@@ -20,41 +24,70 @@ import Image from "next/image";
 import ContactButton from "../../components/ContactButton";
 import Navbar from "../../components/Navbar";
 import Sidebar from "../../components/Sidebar";
+import { useAuth } from "../../contexts/AuthContext";
+import { useAppSelector } from "../../hooks";
 
 export default function GameDetailPage() {
   const params = useParams();
   const gameId = params.id as string;
   const dispatch = useAppDispatch();
+  const router = useRouter();
+  const { user } = useAuth();
 
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
-  const [isWishlisted, setIsWishlisted] = useState(false);
   const [quantity, setQuantity] = useState(1);
-  const [imageUrl, setImageUrl] = useState<string>("/placeholder-game.jpg");
+  const [imageUrls, setImageUrls] = useState<string[]>([
+    "/placeholder-game.jpg",
+  ]);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
   // ดึงข้อมูลจาก API
   const { item, loading, error } = useItemById(parseInt(gameId));
 
-  // แปลง Buffer เป็น Image URL
+  // เช็คว่าเกมนี้อยู่ใน wishlist หรือไม่
+  const wishlistItems = useAppSelector((state) => state.wishlist.items);
+  const isWishlisted = wishlistItems.some(
+    (wishItem) => wishItem.id === parseInt(gameId)
+  );
+
+  // แปลง Buffer เป็น Image URL และจัดการหลายรูป
   useEffect(() => {
     if (item?.game_image) {
       if (typeof item.game_image === "string") {
-        // ถ้าเป็น path จาก backend ให้เติม backend URL
-        if (item.game_image.startsWith("uploads/")) {
-          setImageUrl(`http://localhost:3002/${item.game_image}`);
-        } else {
-          setImageUrl(item.game_image);
+        try {
+          // ลอง parse เป็น JSON array (กรณีหลายรูป)
+          const parsed = JSON.parse(item.game_image);
+          if (Array.isArray(parsed)) {
+            // มีหลายรูป
+            const urls = parsed.map((img: string) =>
+              img.startsWith("uploads/") ? `http://localhost:3002/${img}` : img
+            );
+            setImageUrls(urls);
+          } else {
+            // parse ได้แต่ไม่ใช่ array
+            const singleUrl = item.game_image.startsWith("uploads/")
+              ? `http://localhost:3002/${item.game_image}`
+              : item.game_image;
+            setImageUrls([singleUrl]);
+          }
+        } catch {
+          // parse ไม่ได้ แสดงว่าเป็น string เดียว (รูปเดียว)
+          const singleUrl = item.game_image.startsWith("uploads/")
+            ? `http://localhost:3002/${item.game_image}`
+            : item.game_image;
+          setImageUrls([singleUrl]);
         }
       } else {
+        // กรณี Buffer
         try {
           const uint8Array = new Uint8Array(item.game_image);
           const blob = new Blob([uint8Array], { type: "image/jpeg" });
           const url = URL.createObjectURL(blob);
-          setImageUrl(url);
+          setImageUrls([url]);
           return () => URL.revokeObjectURL(url);
         } catch (error) {
           console.error("Error creating image URL:", error);
-          setImageUrl("/placeholder-game.jpg");
+          setImageUrls(["/placeholder-game.jpg"]);
         }
       }
     }
@@ -74,26 +107,26 @@ export default function GameDetailPage() {
   // แปลงข้อมูลจาก API
   const gameData = item
     ? {
-        id: item.id,
+        id: item.game_id,
         title: item.game_name,
         platform: "Steam",
-        price: parseFloat(item.price),
-        originalPrice: parseFloat(item.price) * 1.3, // คำนวณราคาเดิม (สมมติส่วนลด 30%)
+        price: parseFloat(item.game_price),
+        originalPrice: parseFloat(item.game_price) * 1.3, // คำนวณราคาเดิม (สมมติส่วนลด 30%)
         discount: "30% Off",
-        sku: `GAME_${item.id}`,
+        sku: `GAME_${item.game_id}`,
         views: 0,
         sold: 0,
         description:
-          item.description ||
+          item.game_description ||
           `คีย์เกมแท้ ${item.game_name} - พร้อมสั่งซื้อในราคา ฿${parseFloat(
-            item.price
+            item.game_price
           ).toFixed(
             2
           )} เท่านั้น! เกมนี้สามารถใช้งานได้บนแพลตฟอร์ม Steam ทั่วโลก สินค้าพร้อมใช้งาน เติมเข้าไอดี Steam ของคุณได้ทันที`,
         fullDescription:
-          item.description ||
+          item.game_description ||
           `${item.game_name} เป็นเกมที่น่าสนใจและได้รับความนิยม พร้อมประสบการณ์การเล่นเกมที่น่าตื่นเต้น`,
-        images: [imageUrl],
+        images: imageUrls,
         features: defaultFeatures,
         gameplay: "ออนไลน์",
         shipping: "พร้อมจัดส่งใน 30 นาที",
@@ -102,6 +135,12 @@ export default function GameDetailPage() {
     : null;
 
   const handleAddToCart = () => {
+    // เช็คว่า login แล้วหรือยัง
+    if (!user) {
+      router.push("/login");
+      return;
+    }
+
     if (!gameData) return;
 
     const game = {
@@ -120,7 +159,29 @@ export default function GameDetailPage() {
   };
 
   const handleWishlist = () => {
-    setIsWishlisted(!isWishlisted);
+    // เช็คว่า login แล้วหรือยัง
+    if (!user) {
+      router.push("/login");
+      return;
+    }
+
+    if (!gameData) return;
+
+    const game = {
+      id: gameData.id,
+      title: gameData.title,
+      image: gameData.images[0],
+      platform: gameData.platform.toLowerCase(),
+      price: gameData.price,
+      originalPrice: gameData.originalPrice,
+      discount: gameData.discount,
+    };
+
+    if (isWishlisted) {
+      dispatch(removeFromWishlist(gameData.id));
+    } else {
+      dispatch(addToWishlist(game));
+    }
   };
 
   const nextImage = () => {

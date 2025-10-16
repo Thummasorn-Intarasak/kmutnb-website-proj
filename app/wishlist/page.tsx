@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useAppDispatch, useAppSelector } from "../hooks";
 import {
@@ -13,12 +13,22 @@ import Sidebar from "../components/Sidebar";
 import ContactButton from "../components/ContactButton";
 import { FaTrash, FaShoppingCart, FaArrowLeft, FaHeart } from "react-icons/fa";
 import { useRouter } from "next/navigation";
+import { useAuth } from "../contexts/AuthContext";
 
 export default function WishlistPage() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const dispatch = useAppDispatch();
   const router = useRouter();
+  const { user, loading } = useAuth();
   const wishlistItems = useAppSelector((state) => state.wishlist.items);
+
+  // เช็คว่า login หรือยัง ถ้ายังไม่ login ให้ redirect ไปหน้า login
+  // ใช้ replace แทน push เพื่อไม่ให้ user กดกลับแล้วกลับมาหน้านี้อีก
+  useEffect(() => {
+    if (!loading && !user) {
+      router.replace("/login");
+    }
+  }, [user, loading, router]);
 
   const toggleSidebar = () => {
     setIsSidebarOpen(!isSidebarOpen);
@@ -41,6 +51,23 @@ export default function WishlistPage() {
       dispatch(clearWishlist());
     }
   };
+
+  // แสดง loading ขณะเช็ค auth
+  if (loading) {
+    return (
+      <div className="bg-gray-100 min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900 mx-auto mb-4"></div>
+          <p className="text-gray-600">กำลังโหลด...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // ถ้ายังไม่ login ให้แสดง null (จะ redirect ไปหน้า login)
+  if (!user) {
+    return null;
+  }
 
   return (
     <div className="bg-gray-100 min-h-screen">

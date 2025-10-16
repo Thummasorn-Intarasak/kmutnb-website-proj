@@ -10,7 +10,7 @@ export default function ContactButton() {
     <div className="fixed bottom-6 right-6 z-[9999]">
       {/* Contact Options Panel */}
       {isOpen && (
-        <div className="absolute bottom-20 right-0 bg-white rounded-lg shadow-2xl border border-gray-200 p-4 w-64 mb-2 animate-fade-in">
+        <div className="absolute bottom-20 right-0 bg-white rounded-lg shadow-2xl border border-gray-200 p-4 w-72 mb-2 animate-fade-in">
           <div className="mb-3">
             <h3 className="font-semibold text-gray-800 text-lg mb-1">
               ติดต่อเรา
@@ -29,9 +29,9 @@ export default function ContactButton() {
               <div className="w-10 h-10 bg-gray-600 rounded-full flex items-center justify-center group-hover:bg-gray-700 transition-colors">
                 <FaEnvelope className="text-white text-xl" />
               </div>
-              <div>
+              <div className="flex-1 min-w-0">
                 <p className="text-sm font-medium text-gray-800">Email</p>
-                <p className="text-xs text-gray-500">
+                <p className="text-xs text-gray-500 break-all">
                   s6504022630129@email.kmutnb.ac.th
                 </p>
               </div>

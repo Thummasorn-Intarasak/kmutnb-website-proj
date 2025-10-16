@@ -1,20 +1,7 @@
 import { createSlice, createAsyncThunk, PayloadAction } from "@reduxjs/toolkit";
 import { bannerApi } from "../../../lib/api-client";
 import { transformBannerData } from "../../../lib/utils";
-
-export interface Banner {
-  id: number;
-  title: string;
-  subtitle?: string;
-  description?: string;
-  image?: string;
-  buttonText?: string;
-  buttonColor?: string;
-  titleColor?: string;
-  backgroundColor?: string;
-  isActive: boolean;
-  sortOrder: number;
-}
+import { Banner } from "../../types/banner.types";
 
 interface BannerState {
   banners: Banner[];
@@ -163,7 +150,7 @@ const bannerSlice = createSlice({
       .addCase(updateBanner.fulfilled, (state, action) => {
         state.loading = false;
         const index = state.banners.findIndex(
-          (banner) => banner.id === action.payload.id
+          (banner) => banner.banner_id === action.payload.banner_id
         );
         if (index !== -1) {
           state.banners[index] = action.payload;
@@ -181,7 +168,7 @@ const bannerSlice = createSlice({
       .addCase(deleteBanner.fulfilled, (state, action) => {
         state.loading = false;
         state.banners = state.banners.filter(
-          (banner) => banner.id !== action.payload
+          (banner) => banner.banner_id !== action.payload
         );
       })
       .addCase(deleteBanner.rejected, (state, action) => {
