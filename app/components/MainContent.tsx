@@ -104,12 +104,15 @@ export default function MainContent() {
           })()}
 
         {/* Footer Info */}
-        <div className="text-center text-gray-600 text-sm">
+        <div className="text-center text-gray-600 text-sm space-y-2">
           <p className="mb-2">
-            Loaded, formerly CDKeys.com, gives gamers like you loads of value on
-            Games, Memberships, Top-Ups and more.
+            FPB Game Store ให้บริการเกมในราคาคุ้มค่า สำหรับเกมเมอร์อย่างคุณ
+            พร้อมส่งทันทีหลังสั่งซื้อ
           </p>
-          <p>Join millions of gamers already saving big with Loaded.</p>
+          <p>เข้าร่วมกับเกมเมอร์หลายล้านคนที่ประหยัดไปกับเรา</p>
+          <p className="text-gray-500 mt-4">
+            Copyright © 2025 FPB Game Store. All rights reserved.
+          </p>
         </div>
       </main>
     </ErrorBoundary>
