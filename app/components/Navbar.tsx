@@ -30,9 +30,9 @@ interface NavbarProps {
 }
 
 interface SearchResult {
-  id: number;
+  game_id: number;
   game_name: string;
-  price: string;
+  game_price: string;
   game_image?: string | Buffer;
 }
 
@@ -167,10 +167,10 @@ export default function Navbar({ onToggleSidebar }: NavbarProps) {
                     </div>
                   ) : searchResults.length > 0 ? (
                     <div className="py-2">
-                      {searchResults.map((result) => (
+                      {searchResults.map((result, index) => (
                         <button
-                          key={result.id}
-                          onClick={() => handleSearchItemClick(result.id)}
+                          key={`search-result-${result.game_id}-${index}`}
+                          onClick={() => handleSearchItemClick(result.game_id)}
                           className="w-full px-4 py-3 hover:bg-gray-50 flex items-center space-x-3 transition-colors"
                         >
                           <img
@@ -183,7 +183,7 @@ export default function Navbar({ onToggleSidebar }: NavbarProps) {
                               {result.game_name}
                             </p>
                             <p className="text-sm text-gray-600">
-                              ฿{parseFloat(result.price).toFixed(2)}
+                              ฿{parseFloat(result.game_price).toFixed(2)}
                             </p>
                           </div>
                         </button>
@@ -364,10 +364,10 @@ export default function Navbar({ onToggleSidebar }: NavbarProps) {
                 </div>
               ) : searchResults.length > 0 ? (
                 <div className="py-2">
-                  {searchResults.map((result) => (
+                  {searchResults.map((result, index) => (
                     <button
-                      key={result.id}
-                      onClick={() => handleSearchItemClick(result.id)}
+                      key={`search-result-mobile-${result.game_id}-${index}`}
+                      onClick={() => handleSearchItemClick(result.game_id)}
                       className="w-full px-4 py-3 hover:bg-gray-50 flex items-center space-x-3 transition-colors"
                     >
                       <img
@@ -380,7 +380,7 @@ export default function Navbar({ onToggleSidebar }: NavbarProps) {
                           {result.game_name}
                         </p>
                         <p className="text-sm text-gray-600">
-                          ฿{parseFloat(result.price).toFixed(2)}
+                          ฿{parseFloat(result.game_price).toFixed(2)}
                         </p>
                       </div>
                     </button>
