@@ -280,25 +280,37 @@ export default function Navbar({ onToggleSidebar }: NavbarProps) {
 
                         {/* เมนูต่างๆ */}
                         <div className="py-1">
-                          <button className="w-full text-left px-4 py-3 text-sm text-gray-700 hover:bg-gray-50 transition-colors flex items-center space-x-3">
+                          <Link
+                            href="/topup"
+                            className="w-full text-left px-4 py-3 text-sm text-gray-700 hover:bg-gray-50 transition-colors flex items-center space-x-3"
+                          >
                             <FaCreditCard className="text-gray-400" />
                             <span>เติมเงิน</span>
-                          </button>
+                          </Link>
 
-                          <button className="w-full text-left px-4 py-3 text-sm text-gray-700 hover:bg-gray-50 transition-colors flex items-center space-x-3">
+                          <Link
+                            href="/inventory"
+                            className="w-full text-left px-4 py-3 text-sm text-gray-700 hover:bg-gray-50 transition-colors flex items-center space-x-3"
+                          >
                             <FaBox className="text-gray-400" />
                             <span>ช่องเก็บของ</span>
-                          </button>
+                          </Link>
 
-                          <button className="w-full text-left px-4 py-3 text-sm text-gray-700 hover:bg-gray-50 transition-colors flex items-center space-x-3">
+                          <Link
+                            href="/history"
+                            className="w-full text-left px-4 py-3 text-sm text-gray-700 hover:bg-gray-50 transition-colors flex items-center space-x-3"
+                          >
                             <FaHistory className="text-gray-400" />
                             <span>ประวัติการซื้อ</span>
-                          </button>
+                          </Link>
 
-                          <button className="w-full text-left px-4 py-3 text-sm text-gray-700 hover:bg-gray-50 transition-colors flex items-center space-x-3">
+                          <Link
+                            href="/settings"
+                            className="w-full text-left px-4 py-3 text-sm text-gray-700 hover:bg-gray-50 transition-colors flex items-center space-x-3"
+                          >
                             <FaCog className="text-gray-400" />
                             <span>การตั้งค่าบัญชี</span>
-                          </button>
+                          </Link>
                         </div>
 
                         {/* แยกเส้น */}
