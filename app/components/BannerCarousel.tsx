@@ -39,60 +39,78 @@ export default function BannerCarousel({
 
   if (banners.length === 0) return null;
 
-  const currentBanner = banners[currentIndex];
+  const getPrevIndex = () =>
+    currentIndex === 0 ? banners.length - 1 : currentIndex - 1;
+  const getNextIndex = () => (currentIndex + 1) % banners.length;
 
-  const handleBannerClick = () => {
-    // ถ้ามี game_id ให้ไปหน้ารายละเอียดเกม
-    if (currentBanner.game_id) {
-      router.push(`/game/${currentBanner.game_id}`);
+  const handleBannerClick = (index: number) => {
+    const banner = banners[index];
+    if (banner.game_id) {
+      router.push(`/game/${banner.game_id}`);
     }
   };
 
   return (
-    <div className="relative w-full h-96 mb-8 overflow-hidden rounded-xl">
-      {/* Banner Content */}
-      <div
-        className="w-full h-full flex items-center justify-center relative transition-all duration-500 ease-in-out cursor-pointer"
-        onClick={handleBannerClick}
-      >
-        {/* Background Image */}
-        {currentBanner.banner_image && (
-          <img
-            src={currentBanner.banner_image}
-            alt={currentBanner.banner_name || "Banner"}
-            className="absolute inset-0 w-full h-full object-cover hover:scale-105 transition-transform duration-300"
-          />
-        )}
-
-        {/* Fallback Background Color (for old banner format) */}
-        {!currentBanner.banner_image && currentBanner.backgroundColor && (
+    <div className="relative w-full h-96 mb-8 overflow-hidden">
+      {/* Banner Container with Peek View */}
+      <div className="relative w-full h-full flex items-center justify-center px-4">
+        {/* Previous Banner (Left Peek) */}
+        {banners.length > 1 && (
           <div
-            className="absolute inset-0"
-            style={{ background: currentBanner.backgroundColor }}
-          ></div>
-        )}
-
-        {/* Game Cards Overlay (if available) */}
-        {currentBanner.games && currentBanner.games.length > 0 && (
-          <div
-            className="absolute bottom-4 left-1/2 transform -translate-x-1/2 flex space-x-2 z-10"
-            onClick={(e) => e.stopPropagation()}
+            className="absolute left-0 w-1/4 h-full z-0 cursor-pointer transition-all duration-500 hover:opacity-70"
+            style={{
+              transform: "translateX(10%) scale(0.9)",
+              opacity: 0.4,
+            }}
+            onClick={() => goToPrevious()}
           >
-            {currentBanner.games.slice(0, 7).map((game, index) => (
-              <div
-                key={index}
-                className="w-16 h-20 rounded-lg shadow-lg transform hover:scale-110 transition-transform bg-gray-600 flex items-center justify-center cursor-default"
-                style={{
-                  transform: `rotate(${(index - 3) * 5}deg) translateY(${
-                    Math.abs(index - 3) * 2
-                  }px)`,
-                }}
-              >
-                <span className="text-white text-xs font-semibold text-center px-1">
-                  {game.title}
-                </span>
-              </div>
-            ))}
+            <div className="w-full h-full rounded-xl overflow-hidden">
+              {banners[getPrevIndex()].banner_image && (
+                <img
+                  src={banners[getPrevIndex()].banner_image}
+                  alt={banners[getPrevIndex()].banner_name || "Previous Banner"}
+                  className="w-full h-full object-cover"
+                />
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* Current Banner (Center) */}
+        <div
+          className="relative w-full max-w-4xl h-full z-10 cursor-pointer transition-all duration-500"
+          onClick={() => handleBannerClick(currentIndex)}
+        >
+          <div className="w-full h-full rounded-xl overflow-hidden shadow-2xl">
+            {banners[currentIndex].banner_image && (
+              <img
+                src={banners[currentIndex].banner_image}
+                alt={banners[currentIndex].banner_name || "Banner"}
+                className="w-full h-full object-cover transition-transform duration-300"
+              />
+            )}
+          </div>
+        </div>
+
+        {/* Next Banner (Right Peek) */}
+        {banners.length > 1 && (
+          <div
+            className="absolute right-0 w-1/4 h-full z-0 cursor-pointer transition-all duration-500 hover:opacity-70"
+            style={{
+              transform: "translateX(-10%) scale(0.9)",
+              opacity: 0.4,
+            }}
+            onClick={() => goToNext()}
+          >
+            <div className="w-full h-full rounded-xl overflow-hidden">
+              {banners[getNextIndex()].banner_image && (
+                <img
+                  src={banners[getNextIndex()].banner_image}
+                  alt={banners[getNextIndex()].banner_name || "Next Banner"}
+                  className="w-full h-full object-cover"
+                />
+              )}
+            </div>
           </div>
         )}
       </div>
@@ -105,18 +123,18 @@ export default function BannerCarousel({
               e.stopPropagation();
               goToPrevious();
             }}
-            className="absolute left-4 top-1/2 transform -translate-y-1/2 bg-black bg-opacity-30 hover:bg-opacity-50 text-white p-3 rounded-full transition-all z-20"
+            className="absolute left-0 top-0 h-full w-20 z-30 flex items-center justify-center bg-gradient-to-r from-black/30 to-transparent hover:from-black/50 text-white transition-all group"
           >
-            <FaChevronLeft className="w-6 h-6" />
+            <FaChevronLeft className="w-8 h-8 group-hover:scale-125 transition-transform" />
           </button>
           <button
             onClick={(e) => {
               e.stopPropagation();
               goToNext();
             }}
-            className="absolute right-4 top-1/2 transform -translate-y-1/2 bg-black bg-opacity-30 hover:bg-opacity-50 text-white p-3 rounded-full transition-all z-20"
+            className="absolute right-0 top-0 h-full w-20 z-30 flex items-center justify-center bg-gradient-to-l from-black/30 to-transparent hover:from-black/50 text-white transition-all group"
           >
-            <FaChevronRight className="w-6 h-6" />
+            <FaChevronRight className="w-8 h-8 group-hover:scale-125 transition-transform" />
           </button>
         </>
       )}
