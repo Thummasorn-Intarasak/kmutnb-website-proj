@@ -6,7 +6,6 @@ import {
   FaHome,
   FaGamepad,
   FaStar,
-  FaNewspaper,
   FaInfoCircle,
   FaPlus,
   FaMinus,
@@ -47,7 +46,6 @@ export default function Sidebar({ isOpen = false, onClose }: SidebarProps) {
   ];
 
   const bottomMenuItems = [
-    { icon: FaNewspaper, label: "อัพเดต", href: "#" },
     { icon: FaInfoCircle, label: "เกี่ยวกับเรา", href: "/about" },
     {
       icon: FaBalanceScale,
