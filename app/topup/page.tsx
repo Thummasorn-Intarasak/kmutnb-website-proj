@@ -106,7 +106,7 @@ export default function TopUpPage() {
                 value={amount}
                 onChange={(e) => setAmount(e.target.value)}
                 placeholder="กรอกจำนวนเงิน (ขั้นต่ำ 50 บาท)"
-                className="w-full px-4 py-3 text-2xl border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent mb-4"
+                className="w-full px-4 py-3 text-2xl text-gray-900 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent mb-4"
                 min="50"
               />
 

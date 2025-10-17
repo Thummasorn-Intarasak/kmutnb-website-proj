@@ -354,7 +354,7 @@ export default function GameDetailPage() {
                 {/* Title */}
                 <div>
                   <h1 className="text-3xl font-bold text-gray-900 mb-4">
-                    CD-Key เกม {gameData.title} ({gameData.platform})
+                    {gameData.title}
                   </h1>
 
                   <div className="flex items-center space-x-6 text-sm text-gray-600 mb-4">
@@ -433,11 +433,6 @@ export default function GameDetailPage() {
                       <p className="text-3xl font-bold text-gray-900">
                         ราคา {gameData.price}฿
                       </p>
-                      {gameData.originalPrice && (
-                        <p className="text-lg text-gray-500 line-through">
-                          {gameData.originalPrice}฿
-                        </p>
-                      )}
                     </div>
                     <div className="flex items-center space-x-2">
                       <button
@@ -464,7 +459,7 @@ export default function GameDetailPage() {
                       >
                         -
                       </button>
-                      <span className="px-4 py-2 border-x border-gray-300 min-w-[60px] text-center">
+                      <span className="px-4 py-2 border-x border-gray-300 min-w-[60px] text-center text-gray-900">
                         {quantity}
                       </span>
                       <button

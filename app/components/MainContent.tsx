@@ -11,7 +11,6 @@ import { BestSellerCardWithApi } from "./BestSellerCard";
 import BannerCarousel from "./BannerCarousel";
 import LoadingSpinner from "./LoadingSpinner";
 import ErrorBoundary from "./ErrorBoundary";
-import ApiTest from "./ApiTest";
 import FeaturedGameCard from "./FeaturedGameCard";
 import { transformGameData } from "../../lib/utils";
 import { Banner } from "../types/banner.types";
@@ -48,9 +47,6 @@ export default function MainContent() {
   return (
     <ErrorBoundary>
       <main className="flex-1 p-6">
-        {/* API Test Component */}
-        <ApiTest />
-
         {/* Banner Carousel */}
         {bannersLoading ? (
           <LoadingSpinner text="กำลังโหลด Banner..." />
