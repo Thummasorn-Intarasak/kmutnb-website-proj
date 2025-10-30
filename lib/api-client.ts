@@ -19,7 +19,9 @@ async function apiCall(endpoint: string, options: RequestInit = {}) {
       .json()
       .catch(() => ({ error: "Unknown error" }));
     throw new Error(
-      errorData.error || `HTTP error! status: ${response.status}`
+      errorData.message ||
+        errorData.error ||
+        `HTTP error! status: ${response.status}`
     );
   }
 
@@ -65,6 +67,8 @@ export const userApi = {
       username?: string;
       email?: string;
       password?: string;
+      balance?: number;
+      role?: string;
     }
   ) => {
     return apiCall(`/users/${id}`, {
@@ -106,9 +110,9 @@ export const itemApi = {
   // สร้างเกมใหม่
   createItem: async (itemData: {
     game_name: string;
-    description?: string;
-    price: number;
-    game_image?: Buffer;
+    game_description?: string;
+    game_price: number;
+    game_image?: string;
   }) => {
     return apiCall("/items", {
       method: "POST",
@@ -116,14 +120,36 @@ export const itemApi = {
     });
   },
 
+  // อัปโหลดรูปภาพสินค้า
+  uploadItemImage: async (id: number, file: File) => {
+    const formData = new FormData();
+    formData.append("image", file);
+
+    const response = await fetch(`${API_BASE_URL}/items/${id}/upload-image`, {
+      method: "PATCH",
+      body: formData,
+    });
+
+    if (!response.ok) {
+      const errorData = await response
+        .json()
+        .catch(() => ({ error: "Unknown error" }));
+      throw new Error(
+        errorData.error || `HTTP error! status: ${response.status}`
+      );
+    }
+
+    return response.json();
+  },
+
   // อัปเดตเกม
   updateItem: async (
     id: number,
     itemData: {
       game_name?: string;
-      description?: string;
-      price?: number;
-      game_image?: Buffer;
+      game_description?: string;
+      game_price?: number;
+      game_image?: string;
     }
   ) => {
     return apiCall(`/items/${id}`, {

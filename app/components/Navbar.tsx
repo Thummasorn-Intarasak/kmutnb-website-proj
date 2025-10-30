@@ -17,6 +17,7 @@ import {
   FaBox,
   FaHistory,
   FaCog,
+  FaUserShield,
 } from "react-icons/fa";
 import { useAuth } from "../contexts/AuthContext";
 import { useAppDispatch, useAppSelector } from "../hooks";
@@ -37,7 +38,7 @@ interface SearchResult {
 }
 
 export default function Navbar({ onToggleSidebar }: NavbarProps) {
-  const { user, logout } = useAuth();
+  const { user, logout, isAdmin } = useAuth();
   const dispatch = useAppDispatch();
   const router = useRouter();
   const { totalItems } = useAppSelector((state) => state.cart) as {
@@ -280,6 +281,19 @@ export default function Navbar({ onToggleSidebar }: NavbarProps) {
 
                         {/* เมนูต่างๆ */}
                         <div className="py-1">
+                          {/* แสดง Admin Dashboard เฉพาะ admin */}
+                          {isAdmin() && (
+                            <Link
+                              href="/admin"
+                              className="w-full text-left px-4 py-3 text-sm text-blue-700 hover:bg-blue-50 transition-colors flex items-center space-x-3 border-b border-gray-100"
+                            >
+                              <FaUserShield className="text-blue-500" />
+                              <span className="font-medium">
+                                Admin Dashboard
+                              </span>
+                            </Link>
+                          )}
+
                           <Link
                             href="/topup"
                             className="w-full text-left px-4 py-3 text-sm text-gray-700 hover:bg-gray-50 transition-colors flex items-center space-x-3"

@@ -8,12 +8,14 @@ import {
 } from "../store/slices/cartSlice";
 import { FaTimes, FaPlus, FaMinus, FaShoppingCart } from "react-icons/fa";
 import { useAuth } from "../contexts/AuthContext";
+import { userApi } from "@/lib/api-client";
+import { generateCdKey } from "@/lib/utils";
 import { useRouter } from "next/navigation";
 
 export default function Cart() {
   const dispatch = useAppDispatch();
   const router = useRouter();
-  const { user } = useAuth();
+  const { user, refreshBalance } = useAuth();
   const { items, totalItems, totalPrice, isOpen } = useAppSelector(
     (state) => state.cart
   );
@@ -34,7 +36,7 @@ export default function Cart() {
     dispatch(closeCart());
   };
 
-  const handleCheckout = () => {
+  const handleCheckout = async () => {
     // เช็คว่า login แล้วหรือยัง
     if (!user) {
       dispatch(closeCart());
@@ -42,8 +44,76 @@ export default function Cart() {
       return;
     }
 
-    // TODO: ไปหน้า checkout
-    alert("ฟังก์ชันชำระเงินยังไม่เสร็จสมบูรณ์");
+    if (items.length === 0) {
+      alert("ตะกร้าสินค้าว่างเปล่า");
+      return;
+    }
+
+    // เช็คยอดเงินเพียงพอหรือไม่
+    const total = totalPrice;
+    const currentBalance = Number(user.balance) || 0;
+    if (currentBalance < total) {
+      alert("ยอดเงินไม่เพียงพอ กรุณาเติมเงิน");
+      return;
+    }
+
+    try {
+      // 1) หักยอดเงินผ่าน API ผู้ใช้
+      await userApi.updateUser(user.id, { balance: currentBalance - total });
+
+      // 2) อัปเดตยอดเงินใน context
+      await refreshBalance();
+
+      // 3) สร้างรายการไปยังช่องเก็บของ (localStorage)
+      const stored = localStorage.getItem("inventory");
+      const inventory: Array<{
+        id: number;
+        gameId: number;
+        gameName: string;
+        gameImage: string;
+        platform: string;
+        cdKey: string;
+        purchaseDate: string;
+      }> = stored ? JSON.parse(stored) : [];
+
+      const now = new Date().toISOString();
+      const newEntries: Array<{
+        id: number;
+        gameId: number;
+        gameName: string;
+        gameImage: string;
+        platform: string;
+        cdKey: string;
+        purchaseDate: string;
+      }> = [];
+      items.forEach((cartItem) => {
+        for (let i = 0; i < cartItem.quantity; i++) {
+          newEntries.push({
+            id: Date.now() + Math.random(),
+            gameId: cartItem.game.id,
+            gameName: cartItem.game.title,
+            gameImage: cartItem.game.image,
+            platform: cartItem.game.platform,
+            cdKey: generateCdKey(),
+            purchaseDate: now,
+          });
+        }
+      });
+
+      localStorage.setItem(
+        "inventory",
+        JSON.stringify([...inventory, ...newEntries])
+      );
+
+      // 4) เคลียร์ตะกร้า ปิด และไปหน้าช่องเก็บของ
+      dispatch(clearCart());
+      dispatch(closeCart());
+      alert("ชำระเงินสำเร็จ! ส่งสินค้าไปยังช่องเก็บของแล้ว");
+      router.push("/inventory");
+    } catch (error) {
+      console.error("Checkout error:", error);
+      alert("เกิดข้อผิดพลาดในการชำระเงิน");
+    }
   };
 
   if (!isOpen) return null;
@@ -62,7 +132,7 @@ export default function Cart() {
           {/* Header */}
           <div className="flex items-center justify-between border-b px-6 py-4">
             <h2 className="text-lg font-semibold text-gray-900">
-              Shopping Cart ({totalItems})
+              ตะกร้าสินค้า ({totalItems})
             </h2>
             <button
               onClick={handleCloseCart}
@@ -77,8 +147,8 @@ export default function Cart() {
             {items.length === 0 ? (
               <div className="flex flex-col items-center justify-center h-full text-gray-500">
                 <FaShoppingCart className="h-16 w-16 mb-4" />
-                <p className="text-lg font-medium">Your cart is empty</p>
-                <p className="text-sm">Add some games to get started!</p>
+                <p className="text-lg font-medium">ตะกร้าสินค้าว่างเปล่า</p>
+                <p className="text-sm">เพิ่มเกมลงตะกร้าเพื่อเริ่มต้น</p>
               </div>
             ) : (
               <div className="space-y-4">
@@ -142,13 +212,13 @@ export default function Cart() {
             <div className="border-t px-6 py-4">
               <div className="flex items-center justify-between mb-4">
                 <span className="text-lg font-semibold text-gray-900">
-                  Total: ฿{totalPrice.toFixed(2)}
+                  รวม: ฿{totalPrice.toFixed(2)}
                 </span>
                 <button
                   onClick={handleClearCart}
                   className="text-sm text-red-600 hover:text-red-800"
                 >
-                  Clear Cart
+                  ล้างตะกร้า
                 </button>
               </div>
               <div className="space-y-2">
@@ -156,13 +226,13 @@ export default function Cart() {
                   onClick={handleCheckout}
                   className="w-full bg-gray-900 text-white py-3 px-4 rounded-lg hover:bg-gray-800 transition-colors font-medium"
                 >
-                  Proceed to Checkout
+                  ชำระเงิน
                 </button>
                 <button
                   onClick={handleCloseCart}
                   className="w-full bg-gray-100 text-gray-900 py-3 px-4 rounded-lg hover:bg-gray-200 transition-colors font-medium"
                 >
-                  Continue Shopping
+                  เลือกซื้อสินค้าต่อ
                 </button>
               </div>
             </div>

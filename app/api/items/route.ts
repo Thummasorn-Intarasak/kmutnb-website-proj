@@ -67,7 +67,10 @@ export async function POST(request: NextRequest) {
   } catch (error) {
     console.error("Error creating item:", error);
     return NextResponse.json(
-      { error: "Failed to create item" },
+      {
+        error: "Failed to create item",
+        message: error instanceof Error ? error.message : "Unknown error",
+      },
       { status: 500 }
     );
   }

@@ -128,3 +128,20 @@ export function transformBannerData(apiBanner: any) {
       : undefined,
   };
 }
+
+/**
+ * สร้าง CD-KEY แบบสุ่ม: ตัวอักษรพิมพ์ใหญ่และตัวเลข 16 ตัว
+ * แบ่งด้วยขีดทุก ๆ 4 ตัว เช่น XXXX-XXXX-XXXX-XXXX
+ */
+export function generateCdKey(): string {
+  const alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+  const chars: string[] = [];
+  for (let i = 0; i < 16; i++) {
+    const idx = Math.floor(Math.random() * alphabet.length);
+    chars.push(alphabet[idx]);
+  }
+  // แทรกขีดทุก ๆ 4 ตัว
+  return `${chars.slice(0, 4).join("")}-${chars.slice(4, 8).join("")}-${chars
+    .slice(8, 12)
+    .join("")}-${chars.slice(12, 16).join("")}`;
+}

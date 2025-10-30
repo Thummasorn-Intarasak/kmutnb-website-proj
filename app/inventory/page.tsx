@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useAuth } from "../contexts/AuthContext";
 import { useRouter } from "next/navigation";
 import Navbar from "../components/Navbar";
@@ -35,10 +35,28 @@ export default function InventoryPage() {
     return null;
   }
 
-  // ตัวอย่างข้อมูล (ในอนาคตจะดึงจาก API)
-  const inventoryItems: InventoryItem[] = [
-    // ตัวอย่างว่าง - จะมีข้อมูลเมื่อซื้อเกม
-  ];
+  const [inventoryItems, setInventoryItems] = useState<InventoryItem[]>([]);
+
+  useEffect(() => {
+    const stored = localStorage.getItem("inventory");
+    if (stored) {
+      try {
+        const parsed = JSON.parse(stored);
+        setInventoryItems(
+          parsed.map((e: any) => ({
+            id: e.id,
+            gameName: e.gameName,
+            gameImage: e.gameImage,
+            cdKey: e.cdKey,
+            purchaseDate: e.purchaseDate,
+            platform: e.platform,
+          }))
+        );
+      } catch {
+        setInventoryItems([]);
+      }
+    }
+  }, []);
 
   const copyToClipboard = (cdKey: string, itemId: number) => {
     navigator.clipboard.writeText(cdKey);

@@ -14,6 +14,7 @@ interface User {
   username: string;
   email: string;
   balance: number;
+  role: string; // 'user' หรือ 'admin'
 }
 
 interface AuthContextType {
@@ -23,6 +24,7 @@ interface AuthContextType {
   logout: () => void;
   loading: boolean;
   refreshBalance: () => Promise<void>;
+  isAdmin: () => boolean;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -61,6 +63,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           username: response.user.username,
           email: response.user.email,
           balance: parseFloat(response.user.balance) || 0,
+          role: response.user.role || "user",
         };
 
         setUser(userData);
@@ -93,6 +96,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           username: response.user.username,
           email: response.user.email,
           balance: parseFloat(response.user.balance) || 0,
+          role: response.user.role || "user",
         };
 
         setUser(userData);
@@ -120,6 +124,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         const updatedUser = {
           ...user,
           balance: parseFloat(response.balance) || user.balance,
+          role: response.role || user.role,
         };
         setUser(updatedUser);
         localStorage.setItem("user", JSON.stringify(updatedUser));
@@ -129,6 +134,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   };
 
+  const isAdmin = (): boolean => {
+    return user?.role === "admin";
+  };
+
   const value = {
     user,
     login,
@@ -136,6 +145,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     logout,
     loading,
     refreshBalance,
+    isAdmin,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

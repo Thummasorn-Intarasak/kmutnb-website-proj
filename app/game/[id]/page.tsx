@@ -413,17 +413,7 @@ export default function GameDetailPage() {
                     </div>
                   </div>
 
-                  <div className="bg-white border border-gray-200 rounded-lg p-4">
-                    <div className="flex items-center space-x-3">
-                      <FaWifi className="text-purple-600" />
-                      <div>
-                        <p className="font-medium text-gray-900">การเล่น</p>
-                        <p className="text-sm text-gray-600">
-                          {gameData.gameplay}
-                        </p>
-                      </div>
-                    </div>
-                  </div>
+                  {null}
                 </div>
 
                 {/* Price and Purchase */}
