@@ -25,6 +25,7 @@ export interface ApiItem {
   game_description?: string;
   game_price: string; // เปลี่ยนจาก number เป็น string เพราะ API ส่งมาเป็น string
   game_image?: Buffer | string;
+  game_tag?: string | string[];
 }
 
 // BestSellerCard Props ที่รองรับข้อมูลจาก API

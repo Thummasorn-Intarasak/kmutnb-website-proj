@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { itemApi } from "@/lib/api-client";
 import Image from "next/image";
+import { useRouter } from "next/navigation";
 
 interface AddItemFormProps {
   onSuccess?: () => void;
@@ -10,10 +11,12 @@ interface AddItemFormProps {
 }
 
 export default function AddItemForm({ onSuccess, onCancel }: AddItemFormProps) {
+  const router = useRouter();
   const [formData, setFormData] = useState({
     game_name: "",
     game_description: "",
     game_price: "",
+    game_tag: "",
   });
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string>("");
@@ -62,6 +65,10 @@ export default function AddItemForm({ onSuccess, onCancel }: AddItemFormProps) {
         game_name: formData.game_name,
         game_description: formData.game_description,
         game_price: parseFloat(formData.game_price),
+        game_tag: formData.game_tag
+          .split(",")
+          .map((t) => t.trim())
+          .filter((t) => t.length > 0),
       });
 
       // ถ้ามีรูปภาพ ให้อัปโหลด
@@ -74,6 +81,7 @@ export default function AddItemForm({ onSuccess, onCancel }: AddItemFormProps) {
         game_name: "",
         game_description: "",
         game_price: "",
+        game_tag: "",
       });
       setImageFile(null);
       setImagePreview("");
@@ -84,6 +92,8 @@ export default function AddItemForm({ onSuccess, onCancel }: AddItemFormProps) {
       }
 
       alert("เพิ่มสินค้าสำเร็จ!");
+      // กลับไปหน้าแดชบอร์ดแอดมิน
+      router.push("/admin");
     } catch (err) {
       console.error("Error creating item:", err);
       const errorMessage =
@@ -143,6 +153,18 @@ export default function AddItemForm({ onSuccess, onCancel }: AddItemFormProps) {
             step="0.01"
             min="0"
             required
+          />
+        </div>
+
+        <div>
+          <label className="block text-gray-300 mb-2">แท็ก (คั่นด้วย ,)</label>
+          <input
+            type="text"
+            name="game_tag"
+            value={formData.game_tag}
+            onChange={handleInputChange}
+            className="w-full bg-[#0d1117] text-white px-4 py-2 rounded border border-gray-700 focus:border-blue-500 focus:outline-none"
+            placeholder="เช่น RPG,Action,Multiplayer"
           />
         </div>
 

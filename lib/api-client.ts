@@ -113,6 +113,7 @@ export const itemApi = {
     game_description?: string;
     game_price: number;
     game_image?: string;
+    game_tag?: string[];
   }) => {
     return apiCall("/items", {
       method: "POST",
@@ -150,6 +151,7 @@ export const itemApi = {
       game_description?: string;
       game_price?: number;
       game_image?: string;
+      game_tag?: string[];
     }
   ) => {
     return apiCall(`/items/${id}`, {

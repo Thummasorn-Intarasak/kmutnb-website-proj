@@ -3,12 +3,15 @@
 import { useState, useEffect } from "react";
 import { itemApi } from "@/lib/api-client";
 import { ApiItem } from "@/app/types";
+import TagBadges from "./TagBadges";
+import { useRouter } from "next/navigation";
 
 interface AdminItemListProps {
   refreshTrigger?: number;
 }
 
 export default function AdminItemList({ refreshTrigger }: AdminItemListProps) {
+  const router = useRouter();
   const [items, setItems] = useState<ApiItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [editingItem, setEditingItem] = useState<ApiItem | null>(null);
@@ -16,6 +19,7 @@ export default function AdminItemList({ refreshTrigger }: AdminItemListProps) {
     game_name: "",
     game_description: "",
     game_price: "",
+    game_tag: "",
   });
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string>("");
@@ -124,6 +128,9 @@ export default function AdminItemList({ refreshTrigger }: AdminItemListProps) {
       game_name: item.game_name,
       game_description: item.game_description || "",
       game_price: item.game_price.toString(),
+      game_tag: Array.isArray(item.game_tag)
+        ? item.game_tag.join(",")
+        : item.game_tag || "",
     });
     setImagePreview("");
     setImageFile(null);
@@ -135,6 +142,7 @@ export default function AdminItemList({ refreshTrigger }: AdminItemListProps) {
       game_name: "",
       game_description: "",
       game_price: "",
+      game_tag: "",
     });
     setImagePreview("");
     setImageFile(null);
@@ -163,6 +171,10 @@ export default function AdminItemList({ refreshTrigger }: AdminItemListProps) {
         game_name: editFormData.game_name,
         game_description: editFormData.game_description,
         game_price: parseFloat(editFormData.game_price),
+        game_tag: editFormData.game_tag
+          .split(",")
+          .map((t) => t.trim())
+          .filter((t) => t.length > 0),
       });
 
       // ถ้ามีรูปภาพใหม่ ให้อัปโหลด
@@ -173,6 +185,8 @@ export default function AdminItemList({ refreshTrigger }: AdminItemListProps) {
       alert("อัปเดตสินค้าสำเร็จ");
       handleCancelEdit();
       fetchItems();
+      // กลับไปหน้าแดชบอร์ดแอดมิน
+      router.push("/admin");
     } catch (error) {
       console.error("Error updating item:", error);
       alert("เกิดข้อผิดพลาดในการอัปเดตสินค้า");
@@ -234,6 +248,21 @@ export default function AdminItemList({ refreshTrigger }: AdminItemListProps) {
               step="0.01"
               min="0"
               required
+            />
+          </div>
+
+          <div>
+            <label className="block text-gray-300 mb-2">
+              แท็ก (คั่นด้วย ,)
+            </label>
+            <input
+              type="text"
+              value={editFormData.game_tag}
+              onChange={(e) =>
+                setEditFormData({ ...editFormData, game_tag: e.target.value })
+              }
+              className="w-full bg-[#0d1117] text-white px-4 py-2 rounded border border-gray-700 focus:border-blue-500 focus:outline-none"
+              placeholder="เช่น RPG,Action,Multiplayer"
             />
           </div>
 
@@ -308,7 +337,7 @@ export default function AdminItemList({ refreshTrigger }: AdminItemListProps) {
               <tr className="border-b border-gray-700 text-left">
                 <th className="pb-3 text-gray-400 font-medium">รูปภาพ</th>
                 <th className="pb-3 text-gray-400 font-medium">ชื่อเกม</th>
-                <th className="pb-3 text-gray-400 font-medium">คำอธิบาย</th>
+                <th className="pb-3 text-gray-400 font-medium">แท็ก</th>
                 <th className="pb-3 text-gray-400 font-medium">ราคา</th>
                 <th className="pb-3 text-gray-400 font-medium text-right">
                   จัดการ
@@ -335,8 +364,8 @@ export default function AdminItemList({ refreshTrigger }: AdminItemListProps) {
                   <td className="py-4 text-white font-medium">
                     {item.game_name}
                   </td>
-                  <td className="py-4 text-gray-400 max-w-md truncate">
-                    {item.game_description || "-"}
+                  <td className="py-4">
+                    <TagBadges tags={item.game_tag} />
                   </td>
                   <td className="py-4 text-white font-semibold">
                     ฿{parseFloat(item.game_price).toFixed(2)}
