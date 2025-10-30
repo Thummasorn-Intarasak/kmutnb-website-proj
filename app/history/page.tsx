@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useAuth } from "../contexts/AuthContext";
 import { useRouter } from "next/navigation";
 import Navbar from "../components/Navbar";
@@ -25,14 +25,19 @@ interface OrderHistory {
 }
 
 export default function HistoryPage() {
-  const { user } = useAuth();
+  const { user, loading } = useAuth();
   const router = useRouter();
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [filterStatus, setFilterStatus] = useState<string>("all");
 
   // ตรวจสอบการ login
-  if (!user) {
-    router.push("/login");
+  useEffect(() => {
+    if (!loading && !user) {
+      router.push("/login");
+    }
+  }, [loading, user, router]);
+
+  if (loading || !user) {
     return null;
   }
 
@@ -225,7 +230,7 @@ export default function HistoryPage() {
               <ul className="text-sm text-blue-800 space-y-1">
                 <li>• CD-Key จะถูกส่งทันทีหลังการชำระเงินสำเร็จ</li>
                 <li>• คำสั่งซื้อที่รอดำเนินการจะใช้เวลาประมาณ 5-30 นาที</li>
-                <li>• สามารถดู CD-Key ได้ที่เมนู "ของเก็บของ"</li>
+                <li>• สามารถดู CD-Key ได้ที่เมนู &quot;ช่องเก็บของ&quot;</li>
                 <li>• หากมีปัญหากรุณาติดต่อฝ่ายสนับสนุนลูกค้า</li>
               </ul>
             </div>

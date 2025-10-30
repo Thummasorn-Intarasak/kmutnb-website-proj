@@ -23,40 +23,62 @@ interface InventoryItem {
   platform: string;
 }
 
+type StoredInventoryItem = {
+  id?: unknown;
+  gameName?: unknown;
+  gameImage?: unknown;
+  cdKey?: unknown;
+  purchaseDate?: unknown;
+  platform?: unknown;
+};
+
 export default function InventoryPage() {
-  const { user } = useAuth();
+  const { user, loading } = useAuth();
   const router = useRouter();
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [copiedKey, setCopiedKey] = useState<number | null>(null);
-
-  // ตรวจสอบการ login
-  if (!user) {
-    router.push("/login");
-    return null;
-  }
-
   const [inventoryItems, setInventoryItems] = useState<InventoryItem[]>([]);
 
+  // ตรวจสอบการ login
   useEffect(() => {
+    if (!loading && !user) {
+      router.push("/login");
+    }
+  }, [loading, user, router]);
+
+  useEffect(() => {
+    if (loading || !user) return;
     const stored = localStorage.getItem("inventory");
-    if (stored) {
-      try {
-        const parsed = JSON.parse(stored);
-        setInventoryItems(
-          parsed.map((e: any) => ({
-            id: e.id,
-            gameName: e.gameName,
-            gameImage: e.gameImage,
-            cdKey: e.cdKey,
-            purchaseDate: e.purchaseDate,
-            platform: e.platform,
-          }))
-        );
-      } catch {
+    if (!stored) {
+      setInventoryItems([]);
+      return;
+    }
+    try {
+      const parsed: unknown = JSON.parse(stored);
+      if (Array.isArray(parsed)) {
+        const mapped: InventoryItem[] = (parsed as unknown[]).map((raw) => {
+          const e = raw as StoredInventoryItem;
+          return {
+            id: Number((e.id as number | string) ?? 0),
+            gameName: String(e.gameName ?? ""),
+            gameImage: String(e.gameImage ?? ""),
+            cdKey: String(e.cdKey ?? ""),
+            purchaseDate: String(e.purchaseDate ?? ""),
+            platform: String(e.platform ?? ""),
+          };
+        });
+        setInventoryItems(mapped);
+      } else {
         setInventoryItems([]);
       }
+    } catch {
+      setInventoryItems([]);
     }
-  }, []);
+  }, [loading, user]);
+
+  if (loading || !user) {
+    return null;
+  }
 
   const copyToClipboard = (cdKey: string, itemId: number) => {
     navigator.clipboard.writeText(cdKey);
@@ -87,7 +109,7 @@ export default function InventoryPage() {
             <div className="mb-8">
               <h1 className="text-3xl font-bold text-gray-900 mb-2">
                 <FaBox className="inline mr-3" />
-                ของเก็บของ
+                ช่องเก็บของ
               </h1>
               <p className="text-gray-600">
                 รายการเกมและ CD-Key ทั้งหมดที่คุณซื้อ
@@ -180,7 +202,8 @@ export default function InventoryPage() {
               <ul className="text-sm text-yellow-800 space-y-1">
                 <li>• CD-Key จะส่งให้ทันทีหลังชำระเงินสำเร็จ</li>
                 <li>
-                  • กดปุ่ม "คัดลอก" เพื่อคัดลอก Key ไปใช้งานบนแพลตฟอร์มต่างๆ
+                  • กดปุ่ม &quot;คัดลอก&quot; เพื่อคัดลอก Key
+                  ไปใช้งานบนแพลตฟอร์มต่างๆ
                 </li>
                 <li>• หาก Key ใช้งานไม่ได้ กรุณาติดต่อฝ่ายสนับสนุนลูกค้า</li>
                 <li>• CD-Key ที่ซื้อไปแล้วไม่สามารถคืนเงินได้</li>
