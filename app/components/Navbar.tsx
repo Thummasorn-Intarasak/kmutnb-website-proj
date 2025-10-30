@@ -15,7 +15,6 @@ import {
   FaChevronDown,
   FaCreditCard,
   FaBox,
-  FaHistory,
   FaCog,
   FaUserShield,
   FaSyncAlt,
@@ -311,21 +310,12 @@ export default function Navbar({ onToggleSidebar }: NavbarProps) {
                             <FaCreditCard className="text-gray-400" />
                             <span>เติมเงิน</span>
                           </Link>
-
                           <Link
                             href="/inventory"
                             className="w-full text-left px-4 py-3 text-sm text-gray-700 hover:bg-gray-50 transition-colors flex items-center space-x-3"
                           >
                             <FaBox className="text-gray-400" />
                             <span>ช่องเก็บของ</span>
-                          </Link>
-
-                          <Link
-                            href="/history"
-                            className="w-full text-left px-4 py-3 text-sm text-gray-700 hover:bg-gray-50 transition-colors flex items-center space-x-3"
-                          >
-                            <FaHistory className="text-gray-400" />
-                            <span>ประวัติการซื้อ</span>
                           </Link>
 
                           <Link
