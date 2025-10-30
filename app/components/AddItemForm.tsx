@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { itemApi } from "@/lib/api-client";
-import Image from "next/image";
+// import Image from "next/image";
 import { useRouter } from "next/navigation";
 
 interface AddItemFormProps {
@@ -18,7 +18,8 @@ export default function AddItemForm({ onSuccess, onCancel }: AddItemFormProps) {
     game_price: "",
     game_tag: "",
   });
-  const [imageFile, setImageFile] = useState<File | null>(null);
+  const [imageFiles, setImageFiles] = useState<File[]>([]);
+  // kept for backward compatibility; not used in multi-preview
   const [imagePreview, setImagePreview] = useState<string>("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string>("");
@@ -34,16 +35,16 @@ export default function AddItemForm({ onSuccess, onCancel }: AddItemFormProps) {
   };
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      setImageFile(file);
-
-      // สร้าง preview
+    const files = e.target.files ? Array.from(e.target.files) : [];
+    if (files.length > 0) {
+      setImageFiles(files);
+      // Preview แสดงรูปแรกพอให้ผู้ใช้เห็นว่ามีการเลือกแล้ว
       const reader = new FileReader();
-      reader.onloadend = () => {
-        setImagePreview(reader.result as string);
-      };
-      reader.readAsDataURL(file);
+      reader.onloadend = () => setImagePreview(reader.result as string);
+      reader.readAsDataURL(files[0]);
+    } else {
+      setImageFiles([]);
+      setImagePreview("");
     }
   };
 
@@ -71,9 +72,9 @@ export default function AddItemForm({ onSuccess, onCancel }: AddItemFormProps) {
           .filter((t) => t.length > 0),
       });
 
-      // ถ้ามีรูปภาพ ให้อัปโหลด
-      if (imageFile && newItem.game_id) {
-        await itemApi.uploadItemImage(newItem.game_id, imageFile);
+      // ถ้ามีรูปภาพ ให้อัปโหลด (รองรับหลายรูป)
+      if (imageFiles.length > 0 && newItem.game_id) {
+        await itemApi.uploadItemImages(newItem.game_id, imageFiles);
       }
 
       // รีเซ็ตฟอร์ม
@@ -83,7 +84,7 @@ export default function AddItemForm({ onSuccess, onCancel }: AddItemFormProps) {
         game_price: "",
         game_tag: "",
       });
-      setImageFile(null);
+      setImageFiles([]);
       setImagePreview("");
 
       // เรียก callback
@@ -169,23 +170,45 @@ export default function AddItemForm({ onSuccess, onCancel }: AddItemFormProps) {
         </div>
 
         <div>
-          <label className="block text-gray-300 mb-2">รูปภาพสินค้า</label>
+          <label className="block text-gray-300 mb-2">
+            รูปภาพสินค้า (อัปโหลดหลายรูปได้)
+          </label>
           <input
             type="file"
             accept="image/*"
             onChange={handleImageChange}
+            multiple
             className="w-full bg-[#0d1117] text-white px-4 py-2 rounded border border-gray-700 focus:border-blue-500 focus:outline-none file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:text-sm file:font-semibold file:bg-blue-600 file:text-white hover:file:bg-blue-700 file:cursor-pointer"
           />
-          {imagePreview && (
+          {imageFiles.length > 0 && (
             <div className="mt-4">
-              <Image
-                src={imagePreview}
-                alt="Preview"
-                width={300}
-                height={300}
-                className="max-w-xs rounded border border-gray-700 object-cover"
-                unoptimized
-              />
+              <p className="text-sm text-gray-400 mb-2">รูปภาพที่จะอัปโหลด:</p>
+              <div className="flex flex-wrap gap-3">
+                {imageFiles.map((file, idx) => {
+                  const src = URL.createObjectURL(file);
+                  const removeAt = () => {
+                    setImageFiles((prev) => prev.filter((_, i) => i !== idx));
+                    setTimeout(() => URL.revokeObjectURL(src), 0);
+                  };
+                  return (
+                    <div key={`${file.name}-${idx}`} className="relative">
+                      <img
+                        src={src}
+                        alt={file.name}
+                        className="w-28 h-28 object-cover rounded border border-gray-700"
+                      />
+                      <button
+                        type="button"
+                        onClick={removeAt}
+                        className="absolute -top-2 -right-2 bg-red-600 text-white w-6 h-6 rounded-full text-xs flex items-center justify-center"
+                        title="เอาไฟล์นี้ออก"
+                      >
+                        ×
+                      </button>
+                    </div>
+                  );
+                })}
+              </div>
             </div>
           )}
         </div>

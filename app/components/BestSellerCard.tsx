@@ -14,6 +14,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { transformGameData, formatPrice } from "../../lib/utils";
 import { useAuth } from "../contexts/AuthContext";
+import TagBadges from "./TagBadges";
 
 // Component เดิมที่ใช้ props
 export function BestSellerCard({
@@ -168,6 +169,42 @@ export function BestSellerCardFromApi({
   const price = formatPrice(transformedGame.price);
   const isInWishlist = wishlistItems.some((wishItem) => wishItem.id === id);
 
+  const parseTagsToArray = (raw: unknown): string[] => {
+    if (!raw) return [];
+    try {
+      if (Array.isArray(raw)) {
+        return (raw as unknown[])
+          .map((t) => String(t).trim())
+          .filter((s) => s.length > 0);
+      }
+      if (typeof raw === "string") {
+        const trimmed = raw.trim();
+        if (trimmed.startsWith("[") && trimmed.endsWith("]")) {
+          const parsed: unknown = JSON.parse(trimmed);
+          return Array.isArray(parsed)
+            ? (parsed as unknown[])
+                .map((t) => String(t).trim())
+                .filter((s) => s.length > 0)
+            : [];
+        }
+        return trimmed
+          .split(",")
+          .map((t) => t.trim())
+          .filter((t) => t.length > 0);
+      }
+    } catch {
+      return String(raw as string)
+        .split(",")
+        .map((t) => t.trim())
+        .filter((t) => t.length > 0);
+    }
+    return [];
+  };
+
+  const tags = parseTagsToArray(
+    (item as unknown as { game_tag?: unknown }).game_tag
+  );
+
   const handleAddToCart = () => {
     // เช็คว่า login แล้วหรือยัง
     if (!user) {
@@ -247,6 +284,13 @@ export function BestSellerCardFromApi({
           {title}
         </h4>
       </Link>
+
+      {/* Tag badges */}
+      {tags.length > 0 && (
+        <div className="mb-2">
+          <TagBadges tags={tags} />
+        </div>
+      )}
 
       <div className="flex items-center justify-between mb-3">
         <div className="flex flex-col">

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { itemApi } from "@/lib/api-client";
 import { ApiItem } from "@/app/types";
 import TagBadges from "./TagBadges";
@@ -21,8 +21,10 @@ export default function AdminItemList({ refreshTrigger }: AdminItemListProps) {
     game_price: "",
     game_tag: "",
   });
-  const [imageFile, setImageFile] = useState<File | null>(null);
+  const [imageFiles, setImageFiles] = useState<File[]>([]);
+  // kept for backward compatibility; not used in multi-preview
   const [imagePreview, setImagePreview] = useState<string>("");
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const getImageUrl = (image: string | Buffer | undefined): string => {
     if (!image) return "/placeholder-game.jpg";
@@ -74,6 +76,20 @@ export default function AdminItemList({ refreshTrigger }: AdminItemListProps) {
     }
 
     return "/placeholder-game.jpg";
+  };
+
+  const getImageArray = (image: string | Buffer | undefined): string[] => {
+    if (!image) return [];
+    if (typeof image === "string") {
+      try {
+        if (image.trim().startsWith("[")) {
+          const arr = JSON.parse(image);
+          return Array.isArray(arr) ? arr.map((s: string) => s) : [];
+        }
+      } catch {}
+      return [image];
+    }
+    return [];
   };
 
   const fetchItems = async () => {
@@ -133,7 +149,7 @@ export default function AdminItemList({ refreshTrigger }: AdminItemListProps) {
         : item.game_tag || "",
     });
     setImagePreview("");
-    setImageFile(null);
+    setImageFiles([]);
   };
 
   const handleCancelEdit = () => {
@@ -145,19 +161,19 @@ export default function AdminItemList({ refreshTrigger }: AdminItemListProps) {
       game_tag: "",
     });
     setImagePreview("");
-    setImageFile(null);
+    setImageFiles([]);
   };
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      setImageFile(file);
-
+    const files = e.target.files ? Array.from(e.target.files) : [];
+    if (files.length > 0) {
+      setImageFiles(files);
       const reader = new FileReader();
-      reader.onloadend = () => {
-        setImagePreview(reader.result as string);
-      };
-      reader.readAsDataURL(file);
+      reader.onloadend = () => setImagePreview(reader.result as string);
+      reader.readAsDataURL(files[0]);
+    } else {
+      setImageFiles([]);
+      setImagePreview("");
     }
   };
 
@@ -177,9 +193,9 @@ export default function AdminItemList({ refreshTrigger }: AdminItemListProps) {
           .filter((t) => t.length > 0),
       });
 
-      // ถ้ามีรูปภาพใหม่ ให้อัปโหลด
-      if (imageFile) {
-        await itemApi.uploadItemImage(editingItem.game_id, imageFile);
+      // ถ้ามีรูปภาพใหม่ ให้อัปโหลด (รองรับหลายรูป)
+      if (imageFiles.length > 0) {
+        await itemApi.uploadItemImages(editingItem.game_id, imageFiles);
       }
 
       alert("อัปเดตสินค้าสำเร็จ");
@@ -267,36 +283,105 @@ export default function AdminItemList({ refreshTrigger }: AdminItemListProps) {
           </div>
 
           <div>
-            <label className="block text-gray-300 mb-2">รูปภาพใหม่</label>
+            <label className="block text-gray-300 mb-2">
+              รูปภาพใหม่ (อัปโหลดหลายรูปได้)
+            </label>
             <input
               type="file"
               accept="image/*"
               onChange={handleImageChange}
+              multiple
+              ref={fileInputRef}
               className="w-full bg-[#0d1117] text-white px-4 py-2 rounded border border-gray-700 focus:border-blue-500 focus:outline-none file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:text-sm file:font-semibold file:bg-blue-600 file:text-white hover:file:bg-blue-700 file:cursor-pointer"
             />
 
-            <div className="mt-4 flex gap-4">
-              {imagePreview ? (
-                <div>
-                  <p className="text-sm text-gray-400 mb-2">รูปภาพใหม่:</p>
-                  <img
-                    src={imagePreview}
-                    alt="New preview"
-                    className="max-w-xs rounded border border-gray-700"
-                  />
+            <div className="mt-4 flex flex-col gap-3">
+              {imageFiles.length > 0 && (
+                <div className="text-sm text-gray-400">
+                  เลือกไฟล์ใหม่ {imageFiles.length} ไฟล์
+                  (ไฟล์ใหม่จะถูกเพิ่มต่อท้ายเมื่อกดบันทึก)
                 </div>
-              ) : editingItem.game_image ? (
+              )}
+
+              {editingItem.game_image ? (
                 <div>
                   <p className="text-sm text-gray-400 mb-2">รูปภาพปัจจุบัน:</p>
-                  <img
-                    src={getImageUrl(editingItem.game_image)}
-                    alt={editingItem.game_name}
-                    className="max-w-xs rounded border border-gray-700"
-                    onError={(e) => {
-                      const target = e.target as HTMLImageElement;
-                      target.src = "/placeholder-game.jpg";
-                    }}
-                  />
+                  <div className="flex flex-wrap gap-3">
+                    {getImageArray(editingItem.game_image).map((path) => {
+                      const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL
+                        ? process.env.NEXT_PUBLIC_API_BASE_URL.replace(
+                            "/api",
+                            ""
+                          )
+                        : "http://localhost:3002";
+                      const src = path.startsWith("/")
+                        ? `${baseUrl}${path}`
+                        : `${baseUrl}/${path}`;
+                      const handleDeleteImage = async () => {
+                        if (!confirm("ลบรูปนี้ออกจากเกม?")) return;
+                        try {
+                          await itemApi.deleteItemImage(
+                            editingItem.game_id,
+                            path
+                          );
+                          const updated = await itemApi.getItemById(
+                            editingItem.game_id
+                          );
+                          setEditingItem(updated);
+                        } catch {
+                          alert("ลบรูปไม่สำเร็จ");
+                        }
+                      };
+                      return (
+                        <div key={path} className="relative">
+                          <img
+                            src={src}
+                            alt={editingItem.game_name}
+                            className="w-28 h-28 object-cover rounded border border-gray-700"
+                          />
+                          <button
+                            type="button"
+                            onClick={handleDeleteImage}
+                            className="absolute -top-2 -right-2 bg-red-600 text-white w-6 h-6 rounded-full text-xs flex items-center justify-center"
+                            title="ลบรูปนี้"
+                          >
+                            ×
+                          </button>
+                        </div>
+                      );
+                    })}
+                    {imageFiles.map((file, idx) => {
+                      const src = URL.createObjectURL(file);
+                      const removeAt = () => {
+                        setImageFiles((prev) =>
+                          prev.filter((_, i) => i !== idx)
+                        );
+                        setTimeout(() => URL.revokeObjectURL(src), 0);
+                        if (fileInputRef.current)
+                          fileInputRef.current.value = "";
+                      };
+                      return (
+                        <div
+                          key={`new-${file.name}-${idx}`}
+                          className="relative"
+                        >
+                          <img
+                            src={src}
+                            alt={file.name}
+                            className="w-28 h-28 object-cover rounded border border-gray-700 opacity-90 ring-2 ring-blue-500/50"
+                          />
+                          <button
+                            type="button"
+                            onClick={removeAt}
+                            className="absolute -top-2 -right-2 bg-gray-700 text-white w-6 h-6 rounded-full text-xs flex items-center justify-center"
+                            title="เอาไฟล์ใหม่นี้ออกจากการอัปโหลด"
+                          >
+                            ×
+                          </button>
+                        </div>
+                      );
+                    })}
+                  </div>
                 </div>
               ) : null}
             </div>

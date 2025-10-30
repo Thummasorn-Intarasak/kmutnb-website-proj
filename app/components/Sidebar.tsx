@@ -5,7 +5,6 @@ import Link from "next/link";
 import {
   FaHome,
   FaGamepad,
-  FaStar,
   FaInfoCircle,
   FaPlus,
   FaMinus,
@@ -14,8 +13,7 @@ import {
   FaChevronRight,
   FaBalanceScale,
 } from "react-icons/fa";
-import { RiMoneyDollarCircleLine } from "react-icons/ri";
-import { MdNewReleases } from "react-icons/md";
+// removed unused icons
 
 interface SidebarProps {
   isOpen?: boolean;
@@ -33,14 +31,21 @@ export default function Sidebar({ isOpen = false, onClose }: SidebarProps) {
     { icon: FaHome, label: "หน้าหลัก", href: "/" },
     {
       icon: FaGamepad,
-      label: "รายการสินค้า",
+      label: "ประเภทเกม",
       href: "#",
       hasExpand: true,
       subItems: [
-        { icon: MdNewReleases, label: "เกมออกใหม่", href: "#" },
-        { icon: FaStar, label: "เกมขายดี", href: "#" },
-        { icon: RiMoneyDollarCircleLine, label: "เกมลดราคา", href: "#" },
-        { icon: FaGamepad, label: "เกมทั้งหมด", href: "#" },
+        { icon: FaGamepad, label: "FPS", href: "/category/fps" },
+        { icon: FaGamepad, label: "Open World", href: "/category/open-world" },
+        {
+          icon: FaGamepad,
+          label: "Multiplayer",
+          href: "/category/multiplayer",
+        },
+        { icon: FaGamepad, label: "Action", href: "/category/action" },
+        { icon: FaGamepad, label: "Indie", href: "/category/indie" },
+        { icon: FaGamepad, label: "RPG", href: "/category/rpg" },
+        { icon: FaGamepad, label: "Horror", href: "/category/horror" },
       ],
     },
   ];

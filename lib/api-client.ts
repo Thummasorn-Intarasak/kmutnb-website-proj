@@ -143,6 +143,40 @@ export const itemApi = {
     return response.json();
   },
 
+  // อัปโหลดรูปภาพหลายไฟล์ของสินค้า
+  uploadItemImages: async (id: number, files: File[]) => {
+    const formData = new FormData();
+    for (const file of files) {
+      formData.append("images", file);
+    }
+
+    const response = await fetch(`${API_BASE_URL}/items/${id}/upload-images`, {
+      method: "PATCH",
+      body: formData,
+    });
+
+    if (!response.ok) {
+      const errorData = await response
+        .json()
+        .catch(() => ({ error: "Unknown error" }));
+      throw new Error(
+        errorData.error || `HTTP error! status: ${response.status}`
+      );
+    }
+
+    return response.json();
+  },
+
+  // ลบรูปภาพเดี่ยวของสินค้า (ตาม path)
+  deleteItemImage: async (id: number, imagePath: string) => {
+    return apiCall(
+      `/items/${id}/images?imagePath=${encodeURIComponent(imagePath)}`,
+      {
+        method: "DELETE",
+      }
+    );
+  },
+
   // อัปเดตเกม
   updateItem: async (
     id: number,
