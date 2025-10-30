@@ -4,6 +4,7 @@ import { useState } from "react";
 import AddItemForm from "@/app/components/AddItemForm";
 import AdminItemList from "@/app/components/AdminItemList";
 import AdminGuard from "@/app/components/AdminGuard";
+import AdminBalanceManager from "@/app/components/AdminBalanceManager";
 import Link from "next/link";
 
 export default function AdminPage() {
@@ -40,6 +41,9 @@ export default function AdminPage() {
 
         {/* Main Content */}
         <div className="max-w-7xl mx-auto px-4 py-8">
+          {/* Admin Balance Manager */}
+          <AdminBalanceManager />
+
           {/* Add Item Button */}
           <div className="mb-6">
             {!showAddForm && (

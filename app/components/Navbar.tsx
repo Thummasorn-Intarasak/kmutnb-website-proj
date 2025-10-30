@@ -18,6 +18,7 @@ import {
   FaHistory,
   FaCog,
   FaUserShield,
+  FaSyncAlt,
 } from "react-icons/fa";
 import { useAuth } from "../contexts/AuthContext";
 import { useAppDispatch, useAppSelector } from "../hooks";
@@ -38,7 +39,7 @@ interface SearchResult {
 }
 
 export default function Navbar({ onToggleSidebar }: NavbarProps) {
-  const { user, logout, isAdmin } = useAuth();
+  const { user, logout, isAdmin, refreshBalance } = useAuth();
   const dispatch = useAppDispatch();
   const router = useRouter();
   const { totalItems } = useAppSelector((state) => state.cart) as {
@@ -235,12 +236,21 @@ export default function Navbar({ onToggleSidebar }: NavbarProps) {
             {/* ส่วนผู้ใช้หรือปุ่มเข้าสู่ระบบ */}
             {user ? (
               <div className="flex items-center space-x-4">
-                {/* แสดงยอดเงิน */}
+                {/* แสดงยอดเงิน + ปุ่มรีเฟรช */}
                 <div className="flex items-center space-x-2 bg-green-50 px-3 py-2 rounded-lg border border-green-200">
                   <FaCoins className="text-green-600 text-sm" />
                   <span className="text-sm font-medium text-green-700">
                     ฿{user.balance.toLocaleString()}
                   </span>
+                  <button
+                    onClick={async () => {
+                      await refreshBalance();
+                    }}
+                    title="รีเฟรชยอดเงิน"
+                    className="ml-2 text-green-700 hover:text-green-900"
+                  >
+                    <FaSyncAlt className="text-xs" />
+                  </button>
                 </div>
 
                 {/* ข้อมูลผู้ใช้และ Dropdown */}
